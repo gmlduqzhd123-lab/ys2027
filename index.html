@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="light">
+<html lang="ko" data-theme="light" data-qr-url="https://gmlduqzhd123-lab.github.io/ys2027/" data-qr-name="슬기로운 교직실무">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,7 +9,21 @@
   <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
   <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png" />
   <link rel="manifest" href="./manifest.json" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="슬기로운 교직실무 올인원 포털" />
+  <meta property="og:description" content="공문서 점검·기안문 빌더·학교회계 정산·보직 한해살이까지 교직실무 올인원" />
+  <meta property="og:url" content="https://gmlduqzhd123-lab.github.io/ys2027/" />
+  <meta property="og:image" content="https://gmlduqzhd123-lab.github.io/ys2027/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="슬기로운 교직실무 올인원 포털" />
+  <meta name="twitter:description" content="공문서 점검·기안문 빌더·학교회계 정산·보직 한해살이까지 교직실무 올인원" />
+  <meta name="twitter:image" content="https://gmlduqzhd123-lab.github.io/ys2027/og-image.jpg" />
+  <meta name="apple-mobile-web-app-title" content="교직실무 포털" />
   <link rel="stylesheet" href="css/styles.css" />
+  <script defer src="./ys-install.js"></script>
+  <script defer src="./ys-qr.js"></script>
 </head>
 <body>
 
@@ -47,9 +61,8 @@
           <span class="search-kbd">Ctrl+K</span>
         </div>
 
-        <button type="button" id="pwaInstallBtn" class="icon-btn icon-btn-accent" style="display:none;" title="홈 화면에 앱으로 설치">
-          <svg class="svg-icon svg-icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-          <span>앱 설치</span>
+        <button type="button" data-ys-install class="icon-btn icon-btn-accent" title="홈 화면에 앱으로 설치">
+          <span>📲 <span class="ys-wide">앱 </span>설치</span>
         </button>
 
         <button type="button" id="openQrShareBtn" class="icon-btn" title="현재 화면 QR 코드로 연수생과 공유">
@@ -1425,6 +1438,7 @@
       </div>
     </section>
 
+    <p class="ys-credit">© 2026 엽쌤. All rights reserved. · <a href="https://gmlduqzhd123-lab.github.io/YScode/">엽쌤의 다른 앱 보기 →</a></p>
   </main>
 
   <!-- 글로벌 통합 검색 모달 (Ctrl+K, 키보드 ↑/↓ + Enter 지원) -->

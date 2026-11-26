@@ -861,7 +861,8 @@
     grammarRules.forEach((rule) => {
       let m;
       while ((m = rule.regex.exec(body)) !== null) {
-        const replaced = m[0].replace(rule.regex, rule.right);
+        // 같은 g 정규식으로 replace하면 lastIndex가 0으로 돌아가 무한 반복된다 → g 없는 복사본 사용
+        const replaced = m[0].replace(new RegExp(rule.regex.source, rule.regex.flags.replace("g", "")), rule.right);
         issues.push({
           type: "error",
           category: rule.cat,
