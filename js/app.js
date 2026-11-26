@@ -28,8 +28,6 @@
     theme: "light",
     fontScale: "normal",
     profile: {
-      schoolName: "장성성산초등학교",
-      slogan: "함께 여는 미래, 탄탄한 전남교육",
       teacherName: "연수생 교사"
     },
     lintCount: 0,
@@ -93,11 +91,12 @@
     try {
       const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
       if (!raw) return clone(defaultState);
-      const parsed = JSON.parse(raw);
+      const sanitizedRaw = raw.replace(/[가-힣]{2,}초등학교/g, "○○초등학교");
+      const parsed = JSON.parse(sanitizedRaw);
       return {
         ...clone(defaultState),
         ...parsed,
-        profile: { ...defaultState.profile, ...(parsed.profile || {}) },
+        profile: { teacherName: (parsed.profile && parsed.profile.teacherName) || defaultState.profile.teacherName },
         labsCompleted: { ...defaultState.labsCompleted, ...(parsed.labsCompleted || {}) },
         labDrafts: { ...defaultState.labDrafts, ...(parsed.labDrafts || {}) },
         preBudgetDraft: {
@@ -144,10 +143,6 @@
 
   function formatNumber(num) {
     return Number(num || 0).toLocaleString("ko-KR");
-  }
-
-  function spaceSchoolName(name) {
-    return String(name || "장성성산초등학교").replace(/\s+/g, "").split("").join(" ");
   }
 
   window.showToast = function (msg) {
@@ -469,19 +464,15 @@
   };
 
   // ==========================================
-  // 2. 내 학교 프로필 설정 & JSON 백업/복원
+  // 2. 사용자 설정 & JSON 백업/복원
   // ==========================================
   function applyProfileToUi() {
     const p = appState.profile;
-    const pill = document.getElementById("headerSchoolDisplay");
-    if (pill) pill.textContent = `🏫 ${p.schoolName}`;
     const teacherInput = document.getElementById("settleTeacher");
     if (teacherInput && !teacherInput.value) teacherInput.value = p.teacherName;
   }
 
   window.openSettingsModal = function () {
-    document.getElementById("settingSchoolName").value = appState.profile.schoolName;
-    document.getElementById("settingSlogan").value = appState.profile.slogan;
     document.getElementById("settingTeacherName").value = appState.profile.teacherName;
     document.getElementById("settingsModalBackdrop").classList.add("open");
   };
@@ -490,27 +481,18 @@
     document.getElementById("settingsModalBackdrop").classList.remove("open");
   };
 
-  window.saveSchoolProfile = function () {
-    const school = document.getElementById("settingSchoolName").value.trim() || "장성성산초등학교";
-    const slogan = document.getElementById("settingSlogan").value.trim() || "함께 여는 미래, 탄탄한 전남교육";
+  window.saveUserProfile = function () {
     const teacher = document.getElementById("settingTeacherName").value.trim() || "연수생 교사";
-    appState.profile = { schoolName: school, slogan, teacherName: teacher };
+    appState.profile = { teacherName: teacher };
     saveState();
     applyProfileToUi();
 
-    const relInput = document.getElementById("bRelatedDoc");
-    if (relInput && relInput.value.includes("초등학교-")) {
-      relInput.value = relInput.value.replace(/^[^-]+-/, `${school}-`);
-      captureBuilderDraft();
-    }
     const settleTeacher = document.getElementById("settleTeacher");
     if (settleTeacher) settleTeacher.value = teacher;
 
-    renderBuilderPreview();
     updateSettlementSummaryOnly();
-    renderLab3Preview();
     window.closeSettingsModal();
-    window.showToast(`'${school}' 프로필이 전체 문서에 반영되었습니다.`);
+    window.showToast("사용자 설정이 저장되었습니다.");
   };
 
   window.exportBackupJson = function () {
@@ -1163,10 +1145,9 @@
   }
 
   window.loadBuilderPreset = function (preset) {
-    const school = appState.profile.schoolName || "장성성산초등학교";
     if (preset === "fieldtrip") {
       document.getElementById("bDocType").value = "내부결재";
-      document.getElementById("bRelatedDoc").value = `${school}-4808(2026. 5. 8.)`;
+      document.getElementById("bRelatedDoc").value = "○○초등학교-4808(2026. 5. 8.)";
       document.getElementById("bTitle").value = "2026학년도 1학기 현장체험학습 사전답사 실시 계획";
       document.getElementById("bPurpose").value = "2026학년도 현장체험학습 매뉴얼에 의거하여 안전하고 교육적인 체험학습 운영을 위해 다음과 같이 사전답사를 실시하고자 합니다.";
       document.getElementById("bDate").value = "2026. 5. 20.(수) 14:00~17:00";
@@ -1183,7 +1164,7 @@
       document.getElementById("bTitle").value = "2026학년도 학교 생태환경교육 자율동아리 5월 활동 계획";
       document.getElementById("bPurpose").value = "학생 주도적 생태환경 보호 실천과 협동심 함양을 위하여 자율동아리 5월 활동(우리 동네 플로깅)을 다음과 같이 운영하고자 합니다.";
       document.getElementById("bDate").value = "2026. 5. 22.(금) 13:30~15:50";
-      document.getElementById("bPlace").value = "학교 주변 생태탐방로 및 성산천 일대";
+      document.getElementById("bPlace").value = "학교 주변 생태탐방로 및 인근 하천 일대";
       document.getElementById("bTarget").value = "생태환경 자율동아리 회원 16명 및 지도교사 2명";
       document.getElementById("bDetails").value = "사전 안전교육(교통안전·독충 주의·집게 사용법)\n생태 플로깅 및 교내·인근 식생 관찰\n수거 쓰레기 분리배출 및 활동 소감 나눔";
       document.getElementById("bPlanB").value = "우천 및 폭염 특보 시 과학실 내 '업사이클링 친환경 화분 만들기' 활동으로 대체(Plan B)";
@@ -1191,7 +1172,7 @@
       document.getElementById("bAttachments").value = "2026학년도 생태환경 자율동아리 5월 운영 계획서 1부.";
       builderTableRows = [
         { id: 1, time: "13:30~13:50", content: "사전 안전교육 및 활동 도구 배부", owner: "지도교사" },
-        { id: 2, time: "13:50~15:20", content: "성산천 산책로 플로깅 및 식생 관찰", owner: "동아리 전원" },
+        { id: 2, time: "13:50~15:20", content: "인근 산책로 플로깅 및 식생 관찰", owner: "동아리 전원" },
         { id: 3, time: "15:20~15:50", content: "분리배출 및 성찰 소감 나눔", owner: "" }
       ];
     }
@@ -1267,7 +1248,6 @@
 
   function renderBuilderPreview() {
     const m = buildDocModel();
-    const schoolSpaced = spaceSchoolName(appState.profile.schoolName);
     const tableHtml = m.includeTable
       ? `<table class="edufine-table"><thead><tr><th style="width:24%;">시간</th><th>주요 활동 내용</th><th style="width:20%;">담당</th></tr></thead><tbody>${m.tableRowsFormatted
           .map((cells) => `<tr>${cells.map((c) => `<td class="${c.isBlank ? "blank-cell" : ""}">${escapeHtml(c.text)}</td>`).join("")}</tr>`)
@@ -1276,8 +1256,7 @@
 
     document.getElementById("edufinePreviewBox").innerHTML = `
       <div class="edufine-header">
-        <div class="edufine-org-slogan">${escapeHtml(appState.profile.slogan)}</div>
-        <div class="edufine-org-name">${escapeHtml(schoolSpaced)}</div>
+        <div class="edufine-org-name">○ ○ 초 등 학 교</div>
       </div>
       <div class="edufine-meta-row"><span class="edufine-meta-label">수신</span><span>${escapeHtml(m.docType)}</span></div>
       <div class="edufine-meta-row"><span class="edufine-meta-label">(경유)</span><span></span></div>
@@ -1720,7 +1699,7 @@
     document.getElementById("settleSummaryBanner").innerHTML = `
       <div class="row-between">
         <div>
-          <strong>${escapeHtml(appState.profile.schoolName)} ${escapeHtml(appState.settlement.className)} (${escapeHtml(teacher)})</strong><br/>
+          <strong>${escapeHtml(appState.settlement.className)} (${escapeHtml(teacher)})</strong><br/>
           <span class="text-sm">수령액(A): <strong>${formatNumber(received)}원</strong> · 집행액(B): <strong>${formatNumber(spent)}원</strong> · 잔액(A-B): <strong style="color:${remain < 0 ? "var(--danger)" : "var(--brand-primary)"};">${formatNumber(remain)}원</strong></span>
         </div>
         <div>${deadlineHtml}</div>
@@ -1763,7 +1742,6 @@
 
     document.getElementById("settlementOfficialPrint").innerHTML = `
       <div style="text-align:center; border-bottom:2px solid #0f172a; padding-bottom:0.85rem; margin-bottom:1.25rem;">
-        <div style="font-size:0.85rem; color:#475569;">${escapeHtml(appState.profile.schoolName)}</div>
         <h2 style="font-size:1.55rem; font-weight:800; letter-spacing:0.25em; margin-top:0.2rem;">정 산 서</h2>
       </div>
       <div style="margin-bottom:1rem; font-size:0.95rem; line-height:1.9;">
@@ -2135,12 +2113,11 @@
       alertBox.style.display = "none";
     }
 
-    const school = appState.profile.schoolName;
     let prompt = "";
     if (task === "plan") {
-      prompt = `[역할] 당신은 전라남도교육청 ${school} 교무행정 및 교육과정 전문가입니다.\n[주제] ${kw}\n[요청사항]\n위 주제로 누구든 바로 실행할 수 있는 '학교 업무 추진계획서' 초안을 작성해 주세요.\n공문서 어문규범(날짜 마침표 뒤 공백, 24시간제, 쉬운 공공언어)과 7대 표준 목차를 준수해 주세요.\n1. 목적 및 필요성 (관련 근거)\n2. 추진 방침\n3. 세부 추진 계획 (일시·장소·대상·시간대별 프로그램 표)\n4. 업무 분장표\n5. 안전 관리 계획 및 유의사항 (※ 우천·악천후 시 대체 계획 Plan B 필수)\n6. 예산 소요 계획 (원가통계비목 및 '단가 × 수량 × 횟수 = 금액' 산출식)\n7. 기대 효과`;
+      prompt = `[역할] 당신은 초등학교 교무행정 및 교육과정 전문가입니다.\n[주제] ${kw}\n[요청사항]\n위 주제로 누구든 바로 실행할 수 있는 '학교 업무 추진계획서' 초안을 작성해 주세요.\n공문서 어문규범(날짜 마침표 뒤 공백, 24시간제, 쉬운 공공언어)과 7대 표준 목차를 준수해 주세요.\n1. 목적 및 필요성 (관련 근거)\n2. 추진 방침\n3. 세부 추진 계획 (일시·장소·대상·시간대별 프로그램 표)\n4. 업무 분장표\n5. 안전 관리 계획 및 유의사항 (※ 우천·악천후 시 대체 계획 Plan B 필수)\n6. 예산 소요 계획 (원가통계비목 및 '단가 × 수량 × 횟수 = 금액' 산출식)\n7. 기대 효과`;
     } else if (task === "letter") {
-      prompt = `[역할] 당신은 ${school} 학부모님과 따뜻하고 명확하게 소통하는 담당 교사입니다.\n[주제] ${kw}\n[요청사항]\n국립국어원 '공공언어 바로 쓰기' 원칙에 따라 어려운 한자어·일본어 투를 피하고 쉽고 정중한 가정통신문 초안을 작성해 주세요. (목적, 일시 '2026. 5. 20.(수)' 형식, 장소, 준비물, 안전 유의사항, 신청 회신서 포함)`;
+      prompt = `[역할] 당신은 학부모님과 따뜻하고 명확하게 소통하는 초등학교 담당 교사입니다.\n[주제] ${kw}\n[요청사항]\n국립국어원 '공공언어 바로 쓰기' 원칙에 따라 어려운 한자어·일본어 투를 피하고 쉽고 정중한 가정통신문 초안을 작성해 주세요. (목적, 일시 '2026. 5. 20.(수)' 형식, 장소, 준비물, 안전 유의사항, 신청 회신서 포함)`;
     } else if (task === "press") {
       prompt = `[역할] 당신은 전라남도교육청 학교 홍보·보도자료 전문 담당자입니다.\n[주제] ${kw}\n[요청사항]\n지역 언론사 배포용 보도자료 초안을 작성해 주세요. 헤드라인·부제목 후보 3개와 육하원칙 기반 간결한 문장(한 문장 2~3줄 이내), 학생·학교장 인터뷰 인용문을 포함해 주세요.`;
     } else if (task === "reply") {
@@ -2238,9 +2215,8 @@
   };
 
   window.fillLab2Answer = function () {
-    const school = appState.profile.schoolName;
     document.getElementById("lab2Title").value = "2026학년도 1학기 현장체험학습 사전답사 실시 계획";
-    document.getElementById("lab2Body").value = `1. 관련: 2026년 현장체험학습 매뉴얼 및 ${school}-4808(2026. 5. 8.)\n2. 2026학년도 1학기 현장체험학습의 안전한 운영을 위하여 다음과 같이 사전답사를 실시하고자 합니다.\n  가. 일시: 2026. 5. 20.(수) 14:00~17:00\n  나. 장소: 국립광주과학관 및 이동 경로 일원\n  다. 대상: 3학년 부장 및 인솔교사 4명\n  라. 주요 내용: 체험시설 안전 점검, 차량 승하차 구역 및 우천 시 대체 동선 확인\n  마. 예산 계획: 공무원 여비 및 입장료(교육운영비·여비) 80,000원\n\n붙임  1. 사전답사 계획 1부.\n      2. 사전답사 체크리스트 1부.  끝.`;
+    document.getElementById("lab2Body").value = `1. 관련: 2026년 현장체험학습 매뉴얼 및 ○○초등학교-4808(2026. 5. 8.)\n2. 2026학년도 1학기 현장체험학습의 안전한 운영을 위하여 다음과 같이 사전답사를 실시하고자 합니다.\n  가. 일시: 2026. 5. 20.(수) 14:00~17:00\n  나. 장소: 국립광주과학관 및 이동 경로 일원\n  다. 대상: 3학년 부장 및 인솔교사 4명\n  라. 주요 내용: 체험시설 안전 점검, 차량 승하차 구역 및 우천 시 대체 동선 확인\n  마. 예산 계획: 공무원 여비 및 입장료(교육운영비·여비) 80,000원\n\n붙임  1. 사전답사 계획 1부.\n      2. 사전답사 체크리스트 1부.  끝.`;
     captureLabDraft("lab2", LAB2_IDS);
     window.gradeLab2();
   };
@@ -2273,7 +2249,7 @@
   window.loadLab3Sample = function () {
     document.getElementById("lab3Title").value = "2026학년도 '초록 빛깔 생태 스케치' 운영 계획";
     document.getElementById("lab3Purpose").value = "• 생태 관찰 및 텃밭 가꾸기 활동을 통한 학생들의 생태 감수성 함양\n• 학생 주도적 프로젝트 활동을 통한 문제 해결 능력 및 협동심 고취";
-    document.getElementById("lab3Schedule").value = "• 4월~5월 | 우리 학교 식물 지도 만들기 | 3학년 전원 | 교내 서식 식물 관찰 및 특징 기록\n• 6월~10월 | '성산 생태 수호대' 동아리 | 희망 학생 | 텃밭 작물 재배 및 생태 신문 발행\n• 11월 | 생태 스케치 결과 공유회 | 전교생 | 프로젝트 결과물 전시 및 소감 발표";
+    document.getElementById("lab3Schedule").value = "• 4월~5월 | 우리 학교 식물 지도 만들기 | 3학년 전원 | 교내 서식 식물 관찰 및 특징 기록\n• 6월~10월 | '초록 생태 수호대' 동아리 | 희망 학생 | 텃밭 작물 재배 및 생태 신문 발행\n• 11월 | 생태 스케치 결과 공유회 | 전교생 | 프로젝트 결과물 전시 및 소감 발표";
     document.getElementById("lab3Budget").value = "• 재배 모종 구입(교육운영비): 2,000원 × 100개 × 1회 = 200,000원 (상추, 방울토마토 등)\n• 관찰 기록 도구(교육운영비): 5,000원 × 25명 × 4학급 = 500,000원 (관찰 수첩 및 색연필)\n• 합계: 700,000원";
     document.getElementById("lab3Safety").value = "• 야외 관찰 시 사전 안전 교육 실시(독충 주의 및 도구 안전 사용법)\n• 우천 시 활동 장소를 교실 내 식물 도감 탐구 및 생태 세밀화 그리기 활동으로 변경(Plan B)";
     captureLabDraft("lab3", LAB3_IDS);
@@ -2288,7 +2264,7 @@
     const budget = document.getElementById("lab3Budget").value.trim();
     const safety = document.getElementById("lab3Safety").value.trim();
     document.getElementById("lab3PreviewBox").innerHTML = `
-      <div class="edufine-header"><div class="edufine-org-slogan">${escapeHtml(appState.profile.schoolName)} 업무 추진계획 초안</div><div style="font-size:1.18rem; font-weight:800; margin-top:0.2rem; color:#0f172a;">${escapeHtml(title)}</div></div>
+      <div class="edufine-header"><div class="edufine-org-slogan">업무 추진계획 초안</div><div style="font-size:1.18rem; font-weight:800; margin-top:0.2rem; color:#0f172a;">${escapeHtml(title)}</div></div>
       <div class="edufine-body"><strong>1. 목적 및 필요성</strong>\n${escapeHtml(purpose)}\n\n<strong>2. 주요 프로그램 및 세부 추진 계획</strong>\n${escapeHtml(schedule)}\n\n<strong>3. 예산 소요 계획 (산출 근거)</strong>\n${escapeHtml(budget)}\n\n<strong>4. 안전 관리 및 악천후 시 대체 계획 (Plan B)</strong>\n${escapeHtml(safety)}</div>
     `;
   }
@@ -2430,7 +2406,7 @@
     const labsDone = Object.values(appState.labsCompleted || {}).filter(Boolean).length;
     const score = appState.quizBestScore !== null ? appState.quizBestScore * 5 : 0;
     const myDepts = window.EDU_DATA.departments.filter((d) => (appState.selectedDepts || []).includes(d.id)).map((d) => d.name.split(" ")[0]).join(", ");
-    sub.textContent = `${appState.profile.schoolName} · ${appState.profile.teacherName} (관심 보직: ${myDepts || "교무부장"})`;
+    sub.textContent = `${appState.profile.teacherName} (관심 보직: ${myDepts || "교무부장"})`;
     grid.innerHTML = `<div class="surface-box"><div class="text-xs text-muted">연수 실습 워크북</div><div style="font-size:1.3rem; font-weight:800; color:var(--brand-primary);">${labsDone} / 3 완료</div></div><div class="surface-box"><div class="text-xs text-muted">종합 능력평가 최고점</div><div style="font-size:1.3rem; font-weight:800; color:${score >= 80 ? "var(--success)" : "var(--brand-primary)"};">${score}점 / 100점</div></div><div class="surface-box"><div class="text-xs text-muted">공문서 린터 점검 누적</div><div style="font-size:1.3rem; font-weight:800; color:var(--brand-primary);">${appState.lintCount || 0}회</div></div>`;
     ts.textContent = `발급 일시: ${new Date().toLocaleDateString("ko-KR")} · 2027 초등 1급 정교사 자격연수 「슬기로운 교직실무 포털」`;
   }

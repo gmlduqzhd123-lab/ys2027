@@ -1,4 +1,4 @@
-const CACHE_NAME = "ys2027-edupotal-v2.2";
+const CACHE_NAME = "ys2027-edupotal-v2.3";
 const CACHE_PREFIX = "ys2027-"; // 같은 주소의 다른 앱 캐시는 지우지 않는다
 const ASSETS = [
   "./",

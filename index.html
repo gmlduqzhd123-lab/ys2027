@@ -40,8 +40,7 @@
             <span class="brand-badge">2027 초등 1정 연수 v2.1</span>
           </div>
           <div class="brand-subtitle">
-            <span>성찰하는 교사 성장하는 교실 2</span>
-            <span class="header-school-pill" id="headerSchoolDisplay">🏫 장성성산초등학교</span>
+            <span>성찰하는 교사 성장하는 교실 2 · 에듀파인 · 공문서 · 학교회계 · 보직교사 · AI 협업</span>
           </div>
         </div>
       </div>
@@ -74,7 +73,7 @@
           <span id="fontScaleLabel">가+</span>
         </button>
 
-        <button type="button" id="openSettingsBtn" class="icon-btn" title="내 학교 설정 · JSON 백업/복원">
+        <button type="button" id="openSettingsBtn" class="icon-btn" title="사용자 설정 · JSON 백업/복원">
           <svg class="svg-icon svg-icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>설정</span>
         </button>
@@ -161,7 +160,7 @@
             <button type="button" class="hero-btn hero-btn-solid" onclick="window.switchMainTab('tab-doc', 'doc-sub-linter')">공문서 바로 교정</button>
             <button type="button" class="hero-btn" onclick="window.switchMainTab('tab-budget', 'budget-sub-finder')">비목 3초 찾기</button>
             <button type="button" class="hero-btn" onclick="window.switchMainTab('tab-role', 'role-sub-dept')">이달의 보직 업무</button>
-            <button type="button" class="hero-btn" onclick="window.openSettingsModal()">내 학교명 설정</button>
+            <button type="button" class="hero-btn" onclick="window.switchMainTab('tab-lab', 'lab-sub-1')">연수 실습 시작</button>
           </div>
         </div>
         <div class="hero-stats">
@@ -189,7 +188,7 @@
         <div class="card-header">
           <div>
             <div class="card-title">강의안 6대 모듈 핵심 요약 및 실무 도구 바로가기</div>
-            <div class="card-subtitle">장성성산초 오효균 선생님 강의안(92쪽)과 부속 참고자료 9종 전체를 인터랙티브 도구로 연결했습니다.</div>
+            <div class="card-subtitle">교직실무 연수 강의안(92쪽)과 부속 참고자료 9종 전체를 인터랙티브 도구로 연결했습니다.</div>
           </div>
           <span class="badge badge-blue">92쪽 전 슬라이드 반영</span>
         </div>
@@ -368,7 +367,7 @@
         </div>
       </div>
 
-      <!-- Sub 2-2: 기안문·표 빌더 (내 학교명 + 내 기안함 + 동적 표 + Rich HTML 복사 + A4 단독 인쇄) -->
+      <!-- Sub 2-2: 기안문·표 빌더 (내 기안함 + 동적 표 + Rich HTML 복사 + A4 단독 인쇄) -->
       <div id="doc-sub-builder" class="sub-panel">
         <div class="grid-2">
           <!-- 좌측 입력 폼 -->
@@ -381,7 +380,6 @@
               <div class="row-wrap">
                 <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('fieldtrip')">사전답사 예시</button>
                 <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('eco')">생태동아리 예시</button>
-                <button type="button" class="btn btn-sm btn-outline" onclick="window.openSettingsModal()">학교명 변경</button>
               </div>
             </div>
 
@@ -404,7 +402,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label">관련 근거 공문 (선택)</label>
-                <input type="text" id="bRelatedDoc" class="form-input" value="장성성산초등학교-4808(2026. 5. 8.)" />
+                <input type="text" id="bRelatedDoc" class="form-input" value="○○초등학교-4808(2026. 5. 8.)" />
               </div>
             </div>
 
@@ -1314,7 +1312,7 @@
               <div class="form-group">
                 <label class="form-label">3. 주요 프로그램 및 일정 (What & When)</label>
                 <textarea id="lab3Schedule" class="form-textarea" style="min-height:92px;">• 4월~5월 | 우리 학교 식물 지도 만들기 | 3학년 전원 | 교내 서식 식물 관찰 및 특징 기록
-• 6월~10월 | '성산 생태 수호대' 동아리 | 희망 학생 | 텃밭 작물 재배 및 생태 신문 발행
+• 6월~10월 | '초록 생태 수호대' 동아리 | 희망 학생 | 텃밭 작물 재배 및 생태 신문 발행
 • 11월 | 생태 스케치 결과 공유회 | 전교생 | 프로젝트 결과물 전시 및 소감 발표</textarea>
               </div>
               <div class="form-group">
@@ -1403,7 +1401,7 @@
           <div class="certificate-card">
             <div class="badge badge-blue mb-1">2027 초등 1급 정교사 자격연수 포트폴리오</div>
             <h2 style="font-size:1.45rem; font-weight:800; margin-bottom:0.4rem;">「교직실무」 자기주도 학습 · 실습 이수 리포트</h2>
-            <p class="text-secondary mb-2" id="certSubtitle">장성성산초등학교 교사</p>
+            <p class="text-secondary mb-2" id="certSubtitle">연수생 교사</p>
             <div class="grid-3 mb-2" id="certSummaryGrid"></div>
             <div class="text-xs text-muted" id="certTimestamp"></div>
           </div>
@@ -1461,34 +1459,26 @@
     </div>
   </div>
 
-  <!-- 내 학교 설정 및 데이터 백업/복원 모달 -->
+  <!-- 사용자 설정 및 데이터 백업/복원 모달 -->
   <div id="settingsModalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
     <div class="modal-card modal-card-sm">
       <div class="modal-header">
-        <div class="card-title" id="settingsModalTitle">내 학교 프로필 설정 · 데이터 백업/복원</div>
+        <div class="card-title" id="settingsModalTitle">사용자 설정 · 데이터 백업/복원</div>
         <button type="button" class="btn btn-sm btn-secondary" onclick="window.closeSettingsModal()">닫기</button>
       </div>
       <div class="modal-body stack-md">
         <div>
-          <div style="font-weight:700; font-size:0.9rem;" class="mb-1">1. 내 학교 · 교육청 기본 정보 (기안문·리포트 자동 반영)</div>
+          <div style="font-weight:700; font-size:0.9rem;" class="mb-1">1. 사용자 표시 정보 (이수 리포트·정산서 표시)</div>
           <div class="form-group">
-            <label class="form-label" for="settingSchoolName">학교명</label>
-            <input type="text" id="settingSchoolName" class="form-input" placeholder="예: 장성성산초등학교" />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="settingSlogan">교육청 / 학교 슬로건</label>
-            <input type="text" id="settingSlogan" class="form-input" placeholder="예: 함께 여는 미래, 탄탄한 전남교육" />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="settingTeacherName">교사 성명 (이수 리포트·정산서 표시)</label>
+            <label class="form-label" for="settingTeacherName">교사 성명</label>
             <input type="text" id="settingTeacherName" class="form-input" placeholder="예: 홍길동" />
           </div>
-          <button type="button" class="btn btn-primary btn-block" onclick="window.saveSchoolProfile()">프로필 저장 및 전체 문서 반영</button>
+          <button type="button" class="btn btn-primary btn-block" onclick="window.saveUserProfile()">설정 저장</button>
         </div>
 
         <div style="border-top:1px solid var(--border-color); padding-top:1rem;">
           <div style="font-weight:700; font-size:0.9rem;" class="mb-1">2. 기기 간 데이터 동기화 (JSON 백업 / 복원)</div>
-          <p class="text-xs text-muted mb-1">학교 PC, 집 PC, 스마트폰 간에 보직 체크리스트·나만의 업무·실습·퀴즈 기록을 안전하게 옮길 수 있습니다.</p>
+          <p class="text-xs text-muted mb-1">PC와 스마트폰 간에 보직 체크리스트·나만의 업무·실습·퀴즈 기록을 안전하게 옮길 수 있습니다.</p>
           <div class="row-wrap">
             <button type="button" class="btn btn-secondary btn-sm" onclick="window.exportBackupJson()">백업 파일(.json) 다운로드</button>
             <label class="btn btn-outline btn-sm" style="cursor:pointer;">
