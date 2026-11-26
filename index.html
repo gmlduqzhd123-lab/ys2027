@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>슬기로운 교직실무 올인원 포털 | 2027 초등 1급 정교사 자격연수</title>
+  <meta name="description" content="2027 초등 1급 정교사 자격연수(교직실무) 강의안 및 참고자료 기반 공문서 린터, 기안문 빌더, 학교회계 비목·강사료·성립전 예산 계산기, 8대 보직 한해살이, 연수 실습 워크북 통합 웹앱" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- 상단 고정 헤더 -->
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand-wrap">
+        <div class="brand-logo" aria-hidden="true">교</div>
+        <div>
+          <div class="brand-title">
+            슬기로운 교직실무 올인원 포털
+            <span class="brand-badge">2027 초등 1급 정교사 연수</span>
+          </div>
+          <div class="brand-subtitle">성찰하는 교사 성장하는 교실 2 · 에듀파인 · 공문서 · 학교회계 · 보직교사 · AI 협업 통합 솔루션</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="global-search-wrap">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input
+            type="text"
+            id="globalSearchTrigger"
+            class="global-search-input"
+            placeholder="공문서 표기, 비목, 강사료, 보직 업무, FAQ 통합 검색..."
+            readonly
+          />
+          <span class="search-kbd">Ctrl+K</span>
+        </div>
+        <button type="button" id="themeToggleBtn" class="icon-btn" title="다크/라이트 모드 전환">
+          <span id="themeIcon">🌙</span>
+          <span id="themeLabel">다크</span>
+        </button>
+        <button type="button" id="resetProgressBtn" class="icon-btn" title="실습·체크리스트 기록 초기화">
+          🔄 초기화
+        </button>
+      </div>
+    </div>
+
+    <!-- 메인 6대 탭 내비게이션 -->
+    <nav class="main-nav" aria-label="주요 메뉴">
+      <button type="button" class="nav-tab active" data-tab="tab-home">
+        🏠 대시보드·요약
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-doc">
+        📝 공문서 린터·기안 빌더 <span class="tab-badge">아이디어 1</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-budget">
+        💰 학교회계·예산·강사료 <span class="tab-badge">아이디어 2</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-role">
+        📅 8대 보직·협업·AI 도구 <span class="tab-badge">아이디어 3</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-lab">
+        🎯 연수 실습 워크북 (3종) <span class="tab-badge">아이디어 4-A</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-quiz">
+        🏆 실무 퀴즈·회계 FAQ 사전 <span class="tab-badge">아이디어 4-B</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- 메인 컨테이너 -->
+  <main class="main-container">
+
+    <!-- ==========================================
+         TAB 1: 🏠 대시보드 & 연수 핵심 요약
+    =========================================== -->
+    <section id="tab-home" class="tab-panel active">
+      <div class="hero-card">
+        <div class="hero-content">
+          <h1>🏫 2027 초등 1급 정교사 자격연수 「교직실무」 통합 포털</h1>
+          <p>
+            장성성산초 오효균 선생님 강의안(92쪽)과 부속 참고자료 9종(공공언어 바로 쓰기, 행정업무운영편람, 한눈에 쏙쏙 학교회계 FAQ, 업무DB·JneGPT·전남메신저 매뉴얼, 실습지)의 모든 규칙과 데이터를 하나로 집약한 올인원 웹 애플리케이션입니다.
+          </p>
+          <div class="hero-tags">
+            <span class="hero-tag">✔ 공문서 어문규범·순화어 자동 교정</span>
+            <span class="hero-tag">✔ 원가통계비목 파인더 & 강사료 계산기</span>
+            <span class="hero-tag">✔ 8대 보직교사 한해살이 체크리스트</span>
+            <span class="hero-tag">✔ 연수 실습 3종 자동 채점 & 실전 퀴즈 20문항</span>
+          </div>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat-box">
+            <div class="hero-stat-num" id="statLabDone">0 / 3</div>
+            <div class="hero-stat-label">연수 실습 완료</div>
+          </div>
+          <div class="hero-stat-box">
+            <div class="hero-stat-num" id="statRoleProgress">0%</div>
+            <div class="hero-stat-label">보직 체크리스트 달성</div>
+          </div>
+          <div class="hero-stat-box">
+            <div class="hero-stat-num" id="statQuizBest">- 점</div>
+            <div class="hero-stat-label">실무 퀴즈 최고점</div>
+          </div>
+          <div class="hero-stat-box">
+            <div class="hero-stat-num" id="statLintCount">0 회</div>
+            <div class="hero-stat-label">공문서 린터 점검</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 강의안 6개 모듈 바로가기 카드 -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📚 강의안 6대 모듈 핵심 요약 및 도구 바로가기</div>
+            <div class="card-subtitle">카드를 클릭하면 해당 모듈을 구현한 인터랙티브 도구 탭으로 즉시 이동합니다.</div>
+          </div>
+          <span class="badge badge-blue">92쪽 전 슬라이드 반영</span>
+        </div>
+        <div id="modulesOverviewGrid" class="grid-3"></div>
+      </div>
+
+      <!-- 1분을 아끼는 에듀파인 단축키 & 항목 위계 표준 -->
+      <div class="grid-2" style="margin-bottom: 1.5rem;">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">⚡ 1분을 아끼는 K-에듀파인 기안문 단축키</div>
+              <div class="card-subtitle">강의안 p.16~18 기안문 작성의 실제 핵심 팁</div>
+            </div>
+            <span class="badge badge-amber">실무 필수</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>단축키 / 조작</th>
+                  <th>실무 작동 기능 및 팁</th>
+                </tr>
+              </thead>
+              <tbody id="shortcutsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📐 공문서 항목 구분 순서 및 들여쓰기 표준</div>
+              <div class="card-subtitle">행정업무운영편람 기준 · 단계마다 1타(띄어쓰기 2번) 들여쓰기</div>
+            </div>
+            <span class="badge badge-green">어문규범</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>단계</th>
+                  <th>기호</th>
+                  <th>들여쓰기</th>
+                  <th>작성 예시</th>
+                </tr>
+              </thead>
+              <tbody id="hierarchyTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 연수 실습 사이트 바로가기 안내 -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🔗 연수 현장 실습 외부 링크 & 참고문헌 아카이브</div>
+            <div class="card-subtitle">강의안 내 QR 코드 및 단축 URL 정보 (비밀번호: 123456)</div>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="card" style="background: var(--bg-tertiary);">
+            <div style="font-weight:700; margin-bottom:0.35rem;">📦 연수 실습 참고자료 다운로드</div>
+            <div style="font-size:0.86rem; color:var(--text-secondary); margin-bottom:0.65rem;">
+              주소: <code>https://bit.ly/26교직실무실습자료</code><br/>
+              비밀번호: <strong>123456</strong> (학교회계 FAQ, 공공언어 바로 쓰기 등)
+            </div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="window.copyText('https://bit.ly/26교직실무실습자료', '실습자료 URL이 복사되었습니다.')">📋 URL 복사</button>
+          </div>
+          <div class="card" style="background: var(--bg-tertiary);">
+            <div style="font-weight:700; margin-bottom:0.35rem;">📊 구글 스프레드시트 협업 실습</div>
+            <div style="font-size:0.86rem; color:var(--text-secondary); margin-bottom:0.65rem;">
+              주소: <code>https://bit.ly/26교직실무실습</code><br/>
+              실습 팁: 접속 후 반드시 <strong>[파일]-[사본 만들기]</strong>로 원본 보호!
+            </div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="window.copyText('https://bit.ly/26교직실무실습', '스프레드시트 실습 URL이 복사되었습니다.')">📋 URL 복사</button>
+          </div>
+          <div class="card" style="background: var(--bg-tertiary);">
+            <div style="font-weight:700; margin-bottom:0.35rem;">📝 구글 폼 만족도 설문지 실습</div>
+            <div style="font-size:0.86rem; color:var(--text-secondary); margin-bottom:0.65rem;">
+              주소: <code>https://bit.ly/26교직실무실습구글폼</code><br/>
+              실습 팁: 사본 생성 후 26학년도 만족도 조사 설문 작성 및 게시 비교
+            </div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="window.copyText('https://bit.ly/26교직실무실습구글폼', '구글폼 실습 URL이 복사되었습니다.')">📋 URL 복사</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 2: 📝 공문서 린터 & 기안문·계획서 빌더 (Idea 1)
+    =========================================== -->
+    <section id="tab-doc" class="tab-panel">
+      <div class="sub-nav">
+        <button type="button" class="sub-tab active" data-sub="doc-sub-linter">🔍 실시간 공문서 바른말·서식 린터</button>
+        <button type="button" class="sub-tab" data-sub="doc-sub-builder">📄 에듀파인 기안문·추진계획서 빌더</button>
+        <button type="button" class="sub-tab" data-sub="doc-sub-dict">📖 공공언어·행정용어 순화 사전 (80+)</button>
+      </div>
+
+      <!-- Sub 2-1: 실시간 공문서 린터 -->
+      <div id="doc-sub-linter" class="sub-panel active">
+        <div class="card" style="margin-bottom: 1.25rem;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🔍 공문서 어문규범·표기·순화어 자동 교정기 (Edulinter)</div>
+              <div class="card-subtitle">날짜(2026. 7. 17.), 시간(~까지 중복), 제목 수식어(~에 관한 건), 외래어, 일본어 투, 행정용어 100선을 실시간 검출합니다.</div>
+            </div>
+            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLinterSample(0)">예문 1 (체험학습 오류)</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLinterSample(1)">예문 2 (연수·물품 오류)</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLinterSample(2)">예문 3 (표준 모범문)</button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- 입력 영역 -->
+            <div>
+              <div class="form-group">
+                <label class="form-label" for="lintTitleInput">공문서 제목</label>
+                <input type="text" id="lintTitleInput" class="form-input" placeholder="예: 2026학년도 1학기 현장체험학습 사전답사 실시 계획" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lintBodyInput">공문서 본문 및 붙임</label>
+                <textarea id="lintBodyInput" class="form-textarea" style="min-height: 280px;" placeholder="기안문 본문을 입력하거나 우측 상단의 샘플 예문 버튼을 클릭해 보세요."></textarea>
+              </div>
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button type="button" id="runLintBtn" class="btn btn-primary">🔍 공문서 정밀 점검 실행</button>
+                <button type="button" id="applyAllFixesBtn" class="btn btn-success">✨ 검출된 오류 일괄 자동 교정</button>
+                <button type="button" class="btn btn-secondary" onclick="window.copyCorrectedDoc()">📋 교정본 복사</button>
+              </div>
+            </div>
+
+            <!-- 진단 결과 영역 -->
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                <span style="font-weight:700; font-size:0.95rem;">📋 검출된 표기·어문규범 피드백</span>
+                <span id="lintSummaryBadge" class="badge badge-blue">점검 대기</span>
+              </div>
+              <div id="lintIssuesContainer" style="max-height: 310px; overflow-y: auto; padding-right: 0.25rem;"></div>
+
+              <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid var(--border-color);">
+                <div style="font-weight:700; font-size:0.88rem; margin-bottom:0.4rem;">✅ 공문서 발송 전 3대 필수 체크리스트 (강의안 p.14)</div>
+                <div style="font-size:0.83rem; color:var(--text-secondary); display:grid; gap:0.25rem;">
+                  <div>• <strong>제목의 명확성</strong>: 핵심 내용이 한눈에 드러나며 '~에 관한 건' 등 불필요한 수식어를 제거했는가?</div>
+                  <div>• <strong>본문의 완결성</strong>: 육하원칙, 항목 위계(1.→가.→1)), 붙임 부수 및 '끝.' 표기가 정확한가?</div>
+                  <div>• <strong>어문규범 준수</strong>: 날짜 마침표 뒤 공백, 시간 24시간제, 의존명사 띄어쓰기 및 순화어를 적용했는가?</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub 2-2: 에듀파인 기안문 & 계획서 빌더 -->
+      <div id="doc-sub-builder" class="sub-panel">
+        <div class="grid-2">
+          <!-- 좌측 입력 폼 -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">📄 에듀파인 기안문 & 맞춤형 추진계획서 빌더</div>
+                <div class="card-subtitle">항목 들여쓰기(2칸), 표 아래 '끝.', 첨부물 개수별 '붙임' 서식을 자동으로 맞춰줍니다.</div>
+              </div>
+              <div style="display:flex; gap:0.35rem;">
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('fieldtrip')">사전답사 예시</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('eco')">생태동아리 예시</button>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">수신자 구분</label>
+                <select id="bDocType" class="form-select">
+                  <option value="내부결재">내부결재 (학교 내부 계획 수립)</option>
+                  <option value="수신자 참조">수신자 참조 (교육지원청·타 기관 발송)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">관련 근거 공문 (선택)</label>
+                <input type="text" id="bRelatedDoc" class="form-input" value="장성성산초등학교-4808(2026. 5. 8.)" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">기안문 제목 ('~에 관한 건' 지양)</label>
+              <input type="text" id="bTitle" class="form-input" value="2026학년도 1학기 현장체험학습 사전답사 실시 계획" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">추진 목적 및 본문 도입 문장</label>
+              <input type="text" id="bPurpose" class="form-input" value="2026학년도 현장체험학습 매뉴얼에 의거하여 안전하고 교육적인 체험학습 운영을 위해 다음과 같이 사전답사를 실시하고자 합니다." />
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">가. 일시 (날짜·시간 표준 표기)</label>
+                <input type="text" id="bDate" class="form-input" value="2026. 5. 20.(수) 14:00~17:00" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">나. 장소</label>
+                <input type="text" id="bPlace" class="form-input" value="국립광주과학관 및 이동 경로 일원" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">다. 대상 및 인원</label>
+              <input type="text" id="bTarget" class="form-input" value="3학년 부장 및 인솔교사 3명 (총 4명)" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">라. 세부 추진 내용 (줄바꿈으로 1), 2) 자동 생성)</label>
+              <textarea id="bDetails" class="form-textarea" style="min-height:85px;">체험 활동 장소의 교육적 적합성 및 안전 시설 확인
+학생 이동 동선, 식당 위생 상태, 비상 대피로 및 보건실 위치 점검
+차량 승·하차 구역 및 주차장 확보 상태 확인</textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">마. 안전 대책 및 우천·악천후 시 대안 (Plan B 필수!)</label>
+              <input type="text" id="bPlanB" class="form-input" value="우천 또는 미세먼지 '나쁨' 시 실내 상설전시관 및 천체투영관 관람 프로그램으로 대체 운영" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">바. 소요 예산 및 산출 근거</label>
+              <input type="text" id="bBudget" class="form-input" value="관외출장 여비 및 입장료(교육운영비·여비): 20,000원 × 4명 × 1회 = 80,000원" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">붙임 (첨부파일 목록 — 줄바꿈으로 구분, 1개면 번호 생략·2개 이상이면 1. 2. 자동 부여)</label>
+              <textarea id="bAttachments" class="form-textarea" style="min-height:70px;">사전답사 계획 1부.
+사전답사 체크리스트 1부.</textarea>
+            </div>
+          </div>
+
+          <!-- 우측 에듀파인 실시간 미리보기 -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🖥️ K-에듀파인 기안문 실시간 미리보기</div>
+                <div class="card-subtitle">행정안전부 행정업무운영편람 표준 서식이 자동 적용된 결과입니다.</div>
+              </div>
+              <div style="display:flex; gap:0.4rem;">
+                <button type="button" class="btn btn-sm btn-primary" onclick="window.copyBuilderOutput()">📋 기안문 전체 복사</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.print()">🖨️ 인쇄/PDF</button>
+              </div>
+            </div>
+
+            <div id="edufinePreviewBox" class="edufine-preview"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub 2-3: 공공언어·행정용어 순화 사전 -->
+      <div id="doc-sub-dict" class="sub-panel">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📖 국립국어원 공공언어·행정용어·일본어 투·외래어 순화 사전</div>
+              <div class="card-subtitle">『개정판 한눈에 알아보는 공공언어 바로 쓰기』 및 『공문서 바로쓰기 2023』 수록 핵심 어휘</div>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+              <select id="dictCategoryFilter" class="form-select" style="width:auto;">
+                <option value="ALL">전체 분류 보기</option>
+                <option value="어려운 한자어">어려운 한자어</option>
+                <option value="일본어 투">일본어 투·음차어</option>
+                <option value="외국어·외래어 순화">외국어·외래어 순화</option>
+                <option value="외래어 표기 오류">외래어 표기 오류</option>
+              </select>
+              <input type="text" id="dictSearchInput" class="form-input" style="width:220px;" placeholder="단어 검색 (예: 익일, 게첩, 부페)..." />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>분류</th>
+                  <th>지양 표현 (X)</th>
+                  <th>권장·순화 표현 (O)</th>
+                  <th>교정 근거 및 설명</th>
+                </tr>
+              </thead>
+              <tbody id="dictTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 3: 💰 학교회계 비목 파인더 & 예산·강사료 계산기 (Idea 2)
+    =========================================== -->
+    <section id="tab-budget" class="tab-panel">
+      <div class="sub-nav">
+        <button type="button" class="sub-tab active" data-sub="budget-sub-finder">🧭 원가통계비목 파인더 & 8대 비교표</button>
+        <button type="button" class="sub-tab" data-sub="budget-sub-calc">🧮 강사수당·간식비·성립전 예산 계산기</button>
+        <button type="button" class="sub-tab" data-sub="budget-sub-guide">🛠️ 학급운영비 계산 & 품의·회수·개산급 가이드</button>
+      </div>
+
+      <!-- Sub 3-1: 원가통계비목 파인더 -->
+      <div id="budget-sub-finder" class="sub-panel active">
+        <div class="card" style="margin-bottom: 1.25rem;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🧭 헷갈리는 원가통계비목 인터랙티브 파인더</div>
+              <div class="card-subtitle">지출 대상과 키워드를 선택하면 정확한 세출예산 원가통계비목과 전남교육청 지침 유의사항을 알려줍니다.</div>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <select id="costTargetFilter" class="form-select" style="width:auto;">
+                <option value="ALL">전체 지출 대상</option>
+                <option value="학생">학생 대상</option>
+                <option value="외부강사·교직원">외부강사·교직원 수당</option>
+                <option value="자원봉사자">자원봉사자</option>
+                <option value="교직원·학부모">교직원·학부모 협의회</option>
+                <option value="교직원">교직원 여비·복지·경조사</option>
+                <option value="학교·부서 공통">학교·부서 공통(도서·비품·사무)</option>
+              </select>
+              <input type="text" id="costSearchInput" class="form-input" style="width:240px;" placeholder="예: 간식, 도서, 봉사료, 강사, 출전..." />
+            </div>
+          </div>
+
+          <div id="costFinderGrid" class="grid-2"></div>
+        </div>
+
+        <!-- 8대 헷갈리는 원가통계비목 VS 비교표 -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">⚖️ 강의안 핵심 정리: 헷갈리는 원가통계비목 8대 비교 (강의안 p.44~46)</div>
+              <div class="card-subtitle">목-세목-원가통계비목 체계 및 실무에서 가장 자주 혼동하는 8가지 사례</div>
+            </div>
+          </div>
+          <div id="costVsGrid" class="grid-2"></div>
+        </div>
+      </div>
+
+      <!-- Sub 3-2: 강사수당 & 성립전 예산 계산기 -->
+      <div id="budget-sub-calc" class="sub-panel">
+        <div class="grid-2">
+          <!-- 좌측: 교육강사수당 자동 계산기 -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🎤 전남 학교회계 교육강사수당 자동 계산기</div>
+                <div class="card-subtitle">학교회계 예산편성 기본지침(p.136) 및 FAQ Q17 기준 단가 자동 적용</div>
+              </div>
+              <span class="badge badge-blue">운영수당 (B10-01)</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="instGradeSelect">강사 등급 선택</label>
+              <select id="instGradeSelect" class="form-select"></select>
+              <div id="instTargetDesc" style="font-size:0.8rem; color:var(--text-muted); margin-top:0.35rem;"></div>
+            </div>
+
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label" for="instHoursPerDay">1일 강의 시간(h)</label>
+                <input type="number" id="instHoursPerDay" class="form-input" value="2" min="1" max="8" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="instCount">강사 인원(명)</label>
+                <input type="number" id="instCount" class="form-input" value="1" min="1" max="20" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="instVisits">총 방문 횟수(회)</label>
+                <input type="number" id="instVisits" class="form-input" value="3" min="1" max="100" />
+              </div>
+            </div>
+
+            <div id="instCalcResultBox" class="card" style="background: var(--bg-accent); border-color: var(--brand-primary); margin-bottom: 1rem;"></div>
+
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <button type="button" class="btn btn-primary" onclick="window.addInstructorToBudget()">➕ 우측 성립전 예산표에 이 강사료 추가</button>
+              <button type="button" class="btn btn-secondary" onclick="window.copyInstructorFormula()">📋 산출식만 복사</button>
+            </div>
+          </div>
+
+          <!-- 우측: 성립전 예산 요구서 시뮬레이터 & 간식비 30% 미만 검증기 -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">📊 성립전 예산 요구서 빌더 & 간식비 비율 검증기</div>
+                <div class="card-subtitle">교부금액 대비 세출 합계 일치 여부 및 간식비 30% 미만 의무 기준을 실시간 검증합니다.</div>
+              </div>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadSamplePreBudget()">공생의 길 예시 로드</button>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">사업명</label>
+                <input type="text" id="preProjectName" class="form-input" value="2026년 공생의 길(물길, 숲길) 프로젝트 운영" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">총 교부금액 (원)</label>
+                <input type="number" id="preTotalGrant" class="form-input" value="1200000" step="10000" />
+              </div>
+            </div>
+
+            <!-- 간식비 비율 및 예산 균형 상태 게이지 -->
+            <div id="preBudgetStatusPanel" class="card" style="background: var(--bg-tertiary); padding: 0.9rem; margin-bottom: 1rem;"></div>
+
+            <!-- 세출 항목 테이블 -->
+            <div class="table-wrap" style="margin-bottom: 0.85rem;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>구분/비목</th>
+                    <th>산출내역</th>
+                    <th>산출식 (단가×수량×횟수)</th>
+                    <th>요구액(원)</th>
+                    <th>삭제</th>
+                  </tr>
+                </thead>
+                <tbody id="preBudgetTableBody"></tbody>
+              </table>
+            </div>
+
+            <!-- 새 세출 항목 추가 폼 -->
+            <div style="background: var(--bg-tertiary); padding: 0.85rem; border-radius: var(--radius-sm); margin-bottom: 0.85rem;">
+              <div style="font-size:0.82rem; font-weight:700; margin-bottom:0.5rem;">➕ 세출예산 항목 직접 추가</div>
+              <div class="grid-4" style="gap:0.5rem;">
+                <select id="newPreBimok" class="form-select">
+                  <option value="교육운영비(자료)">교육운영비 (교육자료)</option>
+                  <option value="교육운영비(간식)">교육운영비 (학생간식)</option>
+                  <option value="운영수당">운영수당 (강사료)</option>
+                  <option value="일반수용비">일반수용비</option>
+                  <option value="여비">여비</option>
+                </select>
+                <input type="text" id="newPreDesc" class="form-input" placeholder="산출내역 (예: 생태 교구 구입)" />
+                <input type="text" id="newPreFormula" class="form-input" placeholder="산출식 (예: 50,000원×1식×6회)" />
+                <input type="number" id="newPreAmount" class="form-input" placeholder="금액(원)" />
+              </div>
+              <button type="button" class="btn btn-sm btn-secondary" style="margin-top:0.5rem;" onclick="window.addCustomPreBudgetRow()">+ 행 추가</button>
+            </div>
+
+            <button type="button" class="btn btn-primary" style="width:100%;" onclick="window.copyPreBudgetDoc()">📋 성립전 예산 요구 기안문 + 세출·세입표 전체 복사</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub 3-3: 학급운영비 계산기 & K-에듀파인 품의·회수·개산급 가이드 -->
+      <div id="budget-sub-guide" class="sub-panel">
+        <div class="grid-2" style="margin-bottom: 1.25rem;">
+          <!-- 학급운영비 계산기 -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🏫 학급운영비 최저 편성 기준 계산기 (FAQ Q14)</div>
+                <div class="card-subtitle">학급당 최저 50만 원 이상 + 학생당 최저 14,000원 이상 (특수학급·병설유치원 포함)</div>
+              </div>
+              <span class="badge badge-green">개산급 5일 내 정산</span>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">학급 수 (일반·특수·병설유 포함)</label>
+                <input type="number" id="classOpClasses" class="form-input" value="1" min="1" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">학급 학생 수 (명)</label>
+                <input type="number" id="classOpStudents" class="form-input" value="20" min="1" />
+              </div>
+            </div>
+            <div id="classOpResultBox" class="card" style="background: var(--bg-tertiary);"></div>
+          </div>
+
+          <!-- 업무추진비 & 경조사비 한도 체커 -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🍽️ 업무추진비 (간담회·경조사비) 한도 계산기</div>
+                <div class="card-subtitle">학교회계 FAQ 부록 1 (p.47~50) 기준 준수 여부 즉시 점검</div>
+              </div>
+              <span class="badge badge-amber">카드 사용 원칙</span>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">간담회·협의회 참석 인원(명)</label>
+                <input type="number" id="promoPeople" class="form-input" value="6" min="1" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">집행 예정 총액(원)</label>
+                <input type="number" id="promoTotal" class="form-input" value="200000" step="10000" />
+              </div>
+            </div>
+            <div id="promoResultBox" class="card" style="background: var(--bg-tertiary);"></div>
+          </div>
+        </div>
+
+        <!-- K-에듀파인 실무 스텝퍼 3종 -->
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">1️⃣ 지출의 4단계 흐름 (강의안 p.54)</div>
+            </div>
+            <div style="font-size:0.88rem; display:grid; gap:0.65rem;">
+              <div style="padding:0.65rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>① 지출품의 (기안자)</strong><br/>
+                세출예산 집행 의사를 결정하는 행위 (<strong>사전 품의 원칙</strong>: 행사·구매일 이전 날짜로 요구)
+              </div>
+              <div style="padding:0.65rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>② 지출원인행위 (학교장 최종 결재)</strong><br/>
+                품의 완료 후 지출의 원인이 되는 <strong>계약 행위</strong>
+              </div>
+              <div style="padding:0.65rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>③ 지출결의 (출납원/행정실장)</strong><br/>
+                계약상대자 청구 정당성 및 검사·검수 확인 후 지급명령 결정
+              </div>
+              <div style="padding:0.65rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>④ 지출 (금융기관 이체)</strong><br/>
+                확정된 채무 이행을 위해 채주에게 현금 지급 완료
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">2️⃣ 결재 중 지출품의 회수·수정 (p.56~57)</div>
+            </div>
+            <div style="font-size:0.88rem; display:grid; gap:0.65rem;">
+              <div style="padding:0.65rem; background:var(--warning-bg); border:1px solid var(--warning-border); border-radius:8px;">
+                <strong>⚠️ 핵심 주의사항</strong><br/>
+                K-에듀파인과 업무관리가 연계되므로 반드시 <strong>업무관리</strong>에서 먼저 회수 후 <strong>연계반송</strong>까지 해야 수정됩니다!
+              </div>
+              <div style="padding:0.65rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>Step 1. 업무관리 > 문서진행 [회수]</strong><br/>
+                <code>업무관리 > 문서관리 > 결재 > 문서진행</code> 클릭 → 문서 체크 → 상단 <strong>[회수]</strong> 클릭 및 회수의견 기재
+              </div>
+              <div style="padding:0.65rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>Step 2. [삭제/연계반송] 클릭</strong><br/>
+                진행상태가 <code>'회수'</code>로 바뀐 것을 확인 → 다시 체크 후 상단 <strong>[삭제/연계반송]</strong> 클릭하여 K-에듀파인으로 반송
+              </div>
+              <div style="padding:0.65rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>Step 3. 품의목록에서 수정</strong><br/>
+                <code>학교회계 > 사업관리 > 품의목록</code>에서 저장 상태인 지출품의서를 열어 수정 후 재결재 요청
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">3️⃣ 학급운영비 개산급 정산등록 (p.60~62)</div>
+            </div>
+            <div style="font-size:0.88rem; display:grid; gap:0.55rem;">
+              <div style="padding:0.6rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>경로</strong>: <code>학교회계 > 사업관리 > 사업담당 > 품의/정산 > 개산급정산등록</code>
+              </div>
+              <div style="padding:0.6rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>①~③ 조회 및 선택</strong>: 개산급 수령일로 조회 후 진행상태가 <strong>'미정산'</strong>인 대상 건 선택
+              </div>
+              <div style="padding:0.6rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>④~⑥ 정산내역 입력</strong>: 정산일자 입력 → <code>[행추가]</code> → 사용일자, 업체명, 금액, 사용내역 입력<br/>
+                <span style="color:var(--brand-primary); font-weight:700;">★ 카드 영수증은 증빙구분을 '전산자료'로 선택!</span>
+              </div>
+              <div style="padding:0.6rem; background:var(--bg-tertiary); border-radius:8px;">
+                <strong>⑦~⑨ 제출 및 출력</strong>: <code>[저장]</code> → <code>[정산서제출]</code> → <code>[출력]</code>하여 영수증 원본과 함께 <strong>집행 완료 후 5일 이내</strong> 행정실 제출
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 4: 📅 8대 보직교사 한해살이 & 실무·AI 도구함 (Idea 3)
+    =========================================== -->
+    <section id="tab-role" class="tab-panel">
+      <div class="sub-nav">
+        <button type="button" class="sub-tab active" data-sub="role-sub-dept">📅 8대 기능부장 한해살이 체크리스트</button>
+        <button type="button" class="sub-tab" data-sub="role-sub-tools">🗂️ 업무DB · 문서등록대장 · 4대 협업 도구 Tip</button>
+        <button type="button" class="sub-tab" data-sub="role-sub-ai">🤖 전남교육 AI (JNE챗봇·JneGPT·NotebookLM) & 프롬프트 빌더</button>
+      </div>
+
+      <!-- Sub 4-1: 8대 기능부장 한해살이 -->
+      <div id="role-sub-dept" class="sub-panel active">
+        <!-- 보직교사 핵심 철학 배너 -->
+        <div class="card" style="margin-bottom: 1.25rem; background: var(--bg-tertiary);">
+          <div class="grid-3">
+            <div>
+              <div style="font-weight:800; color:var(--brand-primary); margin-bottom:0.25rem;">⚖️ 법적 근거 및 조직의 '허리' (p.64)</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">
+                「초·중등교육법」 제19조 근거. 단순 전달자가 아닌 부서 최종 책임자로서 관리자와 교사 의견을 <strong>상호 입장에서 재해석하여 전달</strong>하는 가교 역할.
+              </div>
+            </div>
+            <div>
+              <div style="font-weight:800; color:var(--brand-primary); margin-bottom:0.25rem;">🔄 이원적 리더십의 조화 (p.65)</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">
+                <strong>업무 부장(기능적 리더십)</strong>의 법령·지침 전문성과 <strong>학년 부장(관계적 리더십)</strong>의 경청·갈등 조율 역량을 균형 있게 발휘.
+              </div>
+            </div>
+            <div>
+              <div style="font-weight:800; color:var(--brand-primary); margin-bottom:0.25rem;">🛡️ 선제적 기획과 동료 보호 (p.67, 79)</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">
+                마감 임박 처리가 아닌 여유 있는 기획으로 민주적 협의를 거치고, 민원·비난 발생 시 선제 대응하여 <strong>동료를 보호하는 방패 역할</strong> 수행.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8대 부서 선택 버튼 바 -->
+        <div id="deptSelectorBar" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.25rem;"></div>
+
+        <!-- 선택된 부서 상세 및 시기별 체크리스트 -->
+        <div id="deptDetailContainer"></div>
+      </div>
+
+      <!-- Sub 4-2: 업무DB, 문서등록대장, 협업 도구 4종 -->
+      <div id="role-sub-tools" class="sub-panel">
+        <div class="grid-2" style="margin-bottom: 1.25rem;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🏥 전남교육청 업무DB (T-닥터) 활용법 (p.20~24)</div>
+                <div class="card-subtitle">업무포털 > 상단 [업무DB] > [학교업무] > [T-닥터(초등)]</div>
+              </div>
+              <span class="badge badge-blue">정책기획과 매뉴얼</span>
+            </div>
+            <div style="font-size:0.89rem; display:grid; gap:0.65rem;">
+              <p>• <strong>T-닥터 서비스</strong>: 교무, 연구, 인성, 안전, 돌봄, 방과후, 정보, 과학, 체육 등 부서별 1년 동안 진행될 업무 절차와 흐름을 한눈에 알기 쉽게 도해한 서비스입니다.</p>
+              <p>• <strong>기존자료 메뉴</strong>: <code>업무DB > 기존자료 > 초등 > 교무일반</code> 등에서 연도별·버전별 매뉴얼 및 서식 한글(HWP) 파일을 다운로드할 수 있습니다.</p>
+              <div style="padding:0.75rem; background:var(--bg-accent); border-radius:8px; border-left:4px solid var(--brand-primary);">
+                <strong>💡 외부(가정)에서 EVPN 접속이 불가할 때 꿀팁 (p.24)</strong><br/>
+                일반 포털사이트(구글·네이버)에서 검색 가능한 타 시도교육청 자료실(예: <strong>경상북도교육청 학교지원종합자료실</strong>)을 활용하면 초등 교무학사 연간 흐름과 예시 기안문을 즉시 참고할 수 있습니다.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">📂 문서등록대장 200% 활용법 (p.25~27)</div>
+                <div class="card-subtitle">전임자 업무 파악 · 비전자문서등록 · 보안공유</div>
+              </div>
+              <span class="badge badge-green">날짜만 바꾸기 지양</span>
+            </div>
+            <div style="font-size:0.89rem; display:grid; gap:0.65rem;">
+              <div>
+                <strong>1) 2~3월 전임자 업무 흐름 파악</strong>: <code>기안(접수)자</code>에 전임 담당자 성함 입력 + <code>등록일자</code>를 전년도 1년으로 설정해 검색. 단, 당해 연도 지침 변경을 반드시 확인하고 <strong>날짜만 바꾸어 그대로 기안하는 것은 지양</strong>합니다.
+              </div>
+              <div>
+                <strong>2) 비전자문서등록</strong>: 내부결재 시 에듀파인에 직접 첨부할 수 없는 대용량 오디오·비디오류 등을 공식 보존하기 위해 활용합니다.
+              </div>
+              <div>
+                <strong>3) 보안공유</strong>: 기존 공문이 '부분공개·비공개'로 분류되어 열람할 수 없을 때, 문서등록대장 권한 보유자(교무행정사 등)에게 <strong>보안공유</strong>를 요청하여 열람할 수 있습니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 소통과 협업을 돕는 디지털 도구 4종 -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🤝 조직 내 소통과 협업을 돕는 디지털 도구 4종 실무 Tip (p.80~89)</div>
+              <div class="card-subtitle">구글 스프레드시트 · JNE 메신저 · 네이버 폼 · 구글 폼</div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card" style="background:var(--bg-tertiary);">
+              <div style="font-weight:800; font-size:1rem; margin-bottom:0.5rem;">1️⃣ 구글 스프레드시트 (주간교육활동·자료 수합)</div>
+              <ul style="padding-left:1.2rem; font-size:0.88rem; display:grid; gap:0.35rem;">
+                <li><strong>원본 훼손 방지</strong>: 양식 접속 후 반드시 <code>[파일] - [사본 만들기]</code>로 나만의 자료 생성</li>
+                <li><strong>공유 권한 설정</strong>: <code>일반 액세스 > 링크가 있는 모든 사용자</code> + 역할을 <strong>'편집자'</strong>로 수정 후 링크 배포</li>
+                <li><strong>1분 의견 수합</strong>: <code>[삽입] - [드롭다운]</code>(동의/비동의 등) 및 <code>[체크박스]</code> 기능으로 실시간 의사결정 수합</li>
+              </ul>
+            </div>
+
+            <div class="card" style="background:var(--bg-tertiary);">
+              <div style="font-weight:800; font-size:1rem; margin-bottom:0.5rem;">2️⃣ JNE 메신저 (통합보관함·파일박스·관리자 기능)</div>
+              <ul style="padding-left:1.2rem; font-size:0.88rem; display:grid; gap:0.35rem;">
+                <li><strong>통합보관함 검색</strong>: PC에 쪽지 내용을 저장하고 제목·보낸사람·본문·첨부파일명으로 과거 자료 초고속 검색</li>
+                <li><strong>대용량 전송 한도</strong>: 일반 쪽지 첨부 <strong>최대 500MB</strong> / <strong>파일박스</strong> 학교 전체 공유 상신 <strong>최대 5GB</strong></li>
+                <li><strong>학교 관리자 전용 기능</strong>: 전체 공지 전송, 기관 일정 등록(달력 <strong>보라색</strong> 표기), 관리자 전용 쪽지(수신함 <strong>파란색</strong> 제목), 외부 사용자 추가 및 부서 <strong>겸직(<code>+</code> 아이콘)</strong> 처리</li>
+              </ul>
+            </div>
+
+            <div class="card" style="background:var(--bg-tertiary);">
+              <div style="font-weight:800; font-size:1rem; margin-bottom:0.5rem;">3️⃣ 네이버 폼 (학생·학부모 설문 최적화)</div>
+              <ul style="padding-left:1.2rem; font-size:0.88rem; display:grid; gap:0.35rem;">
+                <li>구글 설문 대비 학생·학부모 모바일 접근성이 높고 제작이 직관적임</li>
+                <li>일정 잡기, 참석 여부 확인, 주소록 등 다양한 맞춤형 템플릿 기본 제공</li>
+                <li>응답 결과를 <strong>엑셀(Excel) 및 도넛·막대 그래프</strong>로 즉시 다운로드하여 결과 보고서에 바로 삽입 가능</li>
+              </ul>
+            </div>
+
+            <div class="card" style="background:var(--bg-tertiary);">
+              <div style="font-weight:800; font-size:1rem; margin-bottom:0.5rem;">4️⃣ 구글 폼 (교원 협업 및 학교교육계획 설문)</div>
+              <ul style="padding-left:1.2rem; font-size:0.88rem; display:grid; gap:0.35rem;">
+                <li>다른 교사나 전임자가 만든 설문지를 <code>[사본 만들기]</code>로 가져와 연도·문항만 수정해 즉시 재활용 가능</li>
+                <li>동학년·부서 교사들을 <strong>공동 편집자</strong>로 추가하여 설문 문항을 동시에 분담 제작 가능</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub 4-3: 전남교육 AI 도구함 & 프롬프트 빌더 -->
+      <div id="role-sub-ai" class="sub-panel">
+        <div class="grid-2" style="margin-bottom: 1.25rem;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🤖 전남교육 AI 플랫폼 4종 완벽 비교 (p.29~37 & JneGPT 가이드)</div>
+                <div class="card-subtitle">업무 성격과 보안 수준에 따라 알맞은 AI 도구를 선택하세요.</div>
+              </div>
+            </div>
+            <div style="font-size:0.88rem; display:grid; gap:0.75rem;">
+              <div style="padding:0.75rem; background:var(--bg-tertiary); border-radius:8px;">
+                <span class="badge badge-blue">내부 규정·원문 파일 확보</span> <strong>1. JNE 챗봇 (<code>https://chat.jne.kr</code>)</strong><br/>
+                업무포털 > 업무DB > JNE챗봇(EPKI 로그인). 전남교육청 업무DB 내부 문서만 기반으로 답변하여 환각을 최소화하며, <strong>학교회계 FAQ, 현장체험학습 매뉴얼, 과학실 법정장부 양식 등 원문 PDF/HWP 다운로드 링크</strong>를 제공합니다.
+              </div>
+              <div style="padding:0.75rem; background:var(--bg-tertiary); border-radius:8px;">
+                <span class="badge badge-purple">에듀테크 SSO 포털</span> <strong>2. 전남 아이모두 & 전남메타스쿨</strong><br/>
+                하나의 계정으로 클래스룸, 패들렛, 퀴즈앤, 미리캔버스, 캔바, 유레카(설문통계), Gemini, NotebookLM, JneGPT를 통합 이용합니다.
+              </div>
+              <div style="padding:0.75rem; background:var(--bg-tertiary); border-radius:8px;">
+                <span class="badge badge-green">교무행정 맞춤형 비서</span> <strong>3. JneGPT (전남메타스쿨 > 에듀테크 활용)</strong><br/>
+                최신 AI 모델 무료 대화 및 <strong>전남교육 전용 업무비서</strong>(학생 상담 도우미, 아동학대 상담가, 안전교육 도우미, 가정통신문 생성, 공문기반 계획서 작성, 전남교육법·인사실무 전문가, 초·중등 학생부 멘토, 행발·평어·과세특 작성기) 및 '나만의 비서 만들기'를 지원합니다.
+              </div>
+              <div style="padding:0.75rem; background:var(--bg-tertiary); border-radius:8px;">
+                <span class="badge badge-amber">내 문서 기반 무환각 분석</span> <strong>4. 구글 NotebookLM</strong><br/>
+                내가 업로드한 PDF·유튜브·웹사이트 소스만 근거로 답변합니다. (예: 학교생활규정 표준안 구버전 vs 신버전 신·구 대조 분석에 최적)
+              </div>
+            </div>
+          </div>
+
+          <!-- JneGPT 안전 프롬프트 빌더 -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">✨ JneGPT 교직실무 안전 프롬프트 생성기</div>
+                <div class="card-subtitle">개인정보 보호 수칙을 준수하면서 JneGPT에 바로 붙여넣을 수 있는 맞춤형 프롬프트를 생성합니다.</div>
+              </div>
+              <span class="badge badge-red">민감정보 입력 금지</span>
+            </div>
+
+            <div style="padding:0.75rem; background:var(--danger-bg); border:1px solid var(--danger-border); border-radius:8px; font-size:0.83rem; margin-bottom:1rem;">
+              <strong>🚫 JneGPT 3대 절대 입력 금지 수칙 (활용 가이드 p.4, 9)</strong><br/>
+              1) 주민등록번호, 휴대폰 번호, 주소 등 개인식별정보<br/>
+              2) 학생·학부모 민감 상담 내용 및 건강 정보<br/>
+              3) 비공개 시험 문제, 비공개 회의록, 비공개 공문서 (※ AI 답변은 반드시 사람이 '휴먼 체크' 후 사용!)
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">작성할 교직실무 문서 유형</label>
+              <select id="aiTaskSelect" class="form-select">
+                <option value="plan">1. 학교 교육활동 업무 추진계획서 초안 (7대 목차 적용)</option>
+                <option value="letter">2. 학부모 대상 가정통신문 (쉬운 공공언어 적용)</option>
+                <option value="press">3. 학교 행사 보도자료 초안</option>
+                <option value="reply">4. 학부모 민원·문의 정중한 답변 및 상담 대응안</option>
+                <option value="compare">5. 지침·규정 구버전 vs 신버전 개정 사항 비교 요약 (NotebookLM용)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">핵심 주제 및 포함할 키워드 (개인정보 제외)</label>
+              <input type="text" id="aiKeywordsInput" class="form-input" value="초등 3~6학년 대상 찾아가는 생태환경 플로깅 데이, 5월 20일, 우천 시 실내 업사이클링 활동 대체" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">생성된 안전 프롬프트 (JneGPT / NotebookLM 복사 전용)</label>
+              <textarea id="aiPromptOutput" class="form-textarea" style="min-height: 150px;" readonly></textarea>
+            </div>
+
+            <button type="button" class="btn btn-primary" style="width:100%;" onclick="window.copyAiPrompt()">📋 생성된 프롬프트 복사하기</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 5: 🎯 연수 실습 디지털 워크북 (3종) (Idea 4-A)
+    =========================================== -->
+    <section id="tab-lab" class="tab-panel">
+      <div class="sub-nav">
+        <button type="button" class="sub-tab active" data-sub="lab-sub-1">🧪 실습 1: 성립전 예산 수립 실습 (강의안 p.52)</button>
+        <button type="button" class="sub-tab" data-sub="lab-sub-2">🧪 실습 2: 체험학습 사전답사 기안문 실습 (강의안 p.40)</button>
+        <button type="button" class="sub-tab" data-sub="lab-sub-3">🧪 실습 3: 나만의 업무 추진계획서 초안 (실습자료 PDF)</button>
+      </div>
+
+      <!-- Lab 1: 성립전 예산 수립 실습 -->
+      <div id="lab-sub-1" class="sub-panel active">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🧪 [실습 1] 「2026. 공생의 길 프로젝트 운영」 성립전 예산 요구서 수립 실습</div>
+              <div class="card-subtitle">강의안 p.49~52 실습 과제를 직접 풀어보고 원가통계비목과 산출식 정답을 즉시 채점해 보세요.</div>
+            </div>
+            <div style="display:flex; gap:0.4rem;">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.fillLab1Answer()">💡 모범답안 자동 채우기</button>
+              <button type="button" class="btn btn-sm btn-primary" onclick="window.gradeLab1()">✅ 실습 채점하기</button>
+            </div>
+          </div>
+
+          <div style="padding:1rem; background:var(--bg-tertiary); border-radius:var(--radius-sm); margin-bottom:1.25rem; font-size:0.9rem;">
+            <strong>📋 실습 조건 (강의안 p.52 그대로 수록)</strong>
+            <ul style="padding-left:1.25rem; margin-top:0.4rem; display:grid; gap:0.25rem;">
+              <li><strong>사업명</strong>: 2026. 공생의 길 프로젝트 운영 (교부금액: <strong>1,200,000원</strong>)</li>
+              <li><strong>조건 1) 학생용 교육 자료 구입</strong>: 알맞은 원가통계비목 선택 및 예산 편성</li>
+              <li><strong>조건 2) 학생용 간식 구입</strong>: 알맞은 원가통계비목 선택 및 <strong>전체 예산(120만 원)의 30% 미만 편성 의무</strong> 준수 (즉, 360,000원 미만)</li>
+              <li><strong>조건 3) 외부 강사 편성</strong>: 알맞은 원가통계비목 선택 및 <strong>일반강사 Ⅱ 외부강사 1명이 하루 2시간 수업하며, 총 3회 방문 예정</strong> (학교회계 FAQ p.35 단가 적용)</li>
+            </ul>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <h3 style="font-size:0.96rem; margin-bottom:0.65rem;">가. 세출예산 요구안 작성 (단위: 원)</h3>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>항목 조건</th>
+                      <th>원가통계비목 선택</th>
+                      <th>산출식 입력</th>
+                      <th>요구액(원)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>1) 학생용 교육 자료 구입</strong><br/><span style="font-size:0.78rem; color:var(--text-muted);">공생의길 프로젝트 운영</span></td>
+                      <td>
+                        <select id="lab1Bimok1" class="form-select">
+                          <option value="">-- 비목 선택 --</option>
+                          <option value="교육운영비">교육운영비</option>
+                          <option value="일반수용비">일반수용비</option>
+                          <option value="비품구입비">비품구입비</option>
+                          <option value="운영수당">운영수당</option>
+                        </select>
+                      </td>
+                      <td><input type="text" id="lab1Formula1" class="form-input" placeholder="예: 150,000원×1식×3회" /></td>
+                      <td><input type="number" id="lab1Amt1" class="form-input" placeholder="450000" /></td>
+                    </tr>
+                    <tr>
+                      <td><strong>2) 학생용 간식 구입</strong><br/><span style="font-size:0.78rem; color:var(--danger);">*30% 미만(36만 원 미만) 의무</span></td>
+                      <td>
+                        <select id="lab1Bimok2" class="form-select">
+                          <option value="">-- 비목 선택 --</option>
+                          <option value="교육운영비">교육운영비</option>
+                          <option value="일반업무추진비">일반업무추진비</option>
+                          <option value="목적사업업무추진비">목적사업업무추진비</option>
+                          <option value="학생복지비">학생복지비</option>
+                        </select>
+                      </td>
+                      <td><input type="text" id="lab1Formula2" class="form-input" placeholder="예: 50,000원×1식×6회" /></td>
+                      <td><input type="number" id="lab1Amt2" class="form-input" placeholder="300000" /></td>
+                    </tr>
+                    <tr>
+                      <td><strong>3) 외부 강사 편성</strong><br/><span style="font-size:0.78rem; color:var(--brand-primary);">*일반강사Ⅱ 1명, 1일 2시간×3회</span></td>
+                      <td>
+                        <select id="lab1Bimok3" class="form-select">
+                          <option value="">-- 비목 선택 --</option>
+                          <option value="운영수당">운영수당</option>
+                          <option value="일반수용비">일반수용비</option>
+                          <option value="교육운영비">교육운영비</option>
+                          <option value="기타수당">기타수당</option>
+                        </select>
+                      </td>
+                      <td><input type="text" id="lab1Formula3" class="form-input" placeholder="예: 150,000원×1명×3회" /></td>
+                      <td><input type="number" id="lab1Amt3" class="form-input" placeholder="450000" /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 style="font-size:0.96rem; margin:1rem 0 0.65rem;">나. 세입예산 확인 (강의안 p.51)</h3>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>목명</th>
+                      <th>원가통계비목</th>
+                      <th>산출내역</th>
+                      <th>예산액</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>교육비특별회계전입금</td>
+                      <td>
+                        <select id="lab1RevBimok" class="form-select">
+                          <option value="목적사업비전입금">목적사업비전입금 (정답)</option>
+                          <option value="학교운영비전입금">학교운영비전입금</option>
+                        </select>
+                      </td>
+                      <td>2026년 공생의 길 프로젝트 운영</td>
+                      <td><strong>1,200,000원</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 채점 결과 및 해설 영역 -->
+            <div>
+              <h3 style="font-size:0.96rem; margin-bottom:0.65rem;">📊 실시간 채점 결과 및 강사 해설</h3>
+              <div id="lab1FeedbackBox" class="card" style="background:var(--bg-tertiary); min-height:280px;">
+                <p style="color:var(--text-muted); font-size:0.9rem;">좌측 표에 원가통계비목과 요구액을 입력한 후 상단의 <strong>[✅ 실습 채점하기]</strong> 버튼을 눌러보세요.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab 2: 00체험학습 사전답사 계획 기안문 실습 -->
+      <div id="lab-sub-2" class="sub-panel">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🧪 [실습 2] 「00체험학습 사전답사 계획」 공문서 기안 실습 (강의안 p.40)</div>
+              <div class="card-subtitle">강의안 p.40의 필수 조건 4가지를 모두 충족하여 기안문을 완성하고 점검받아 보세요.</div>
+            </div>
+            <div style="display:flex; gap:0.4rem;">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.fillLab2Answer()">💡 모범 기안문 채우기</button>
+              <button type="button" class="btn btn-sm btn-primary" onclick="window.gradeLab2()">✅ 기안문 조건 채점하기</button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <div style="padding:0.85rem; background:var(--bg-tertiary); border-radius:var(--radius-sm); margin-bottom:1rem; font-size:0.86rem;">
+                <strong>📌 강의안 p.40 기안문 필수 포함 사항</strong><br/>
+                1) 근거: <strong>2026년 현장체험학습 매뉴얼</strong> 명시<br/>
+                2) 본문: 사전답사 주요 계획(일시·장소·대상·내용) 및 <strong>예산 계획</strong> 포함<br/>
+                3) 붙임: <strong>사전답사 계획 1부</strong>, <strong>사전답사 체크리스트 1부</strong> (첨부물 2개 이상이므로 <code>1.</code>, <code>2.</code> 번호 부여 및 마지막 <code>끝.</code> 표기)
+              </div>
+              <div class="form-group">
+                <label class="form-label">제목</label>
+                <input type="text" id="lab2Title" class="form-input" placeholder="예: 2026학년도 1학기 현장체험학습 사전답사 실시 계획" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">기안문 본문 및 붙임 작성</label>
+                <textarea id="lab2Body" class="form-textarea" style="min-height:260px;" placeholder="1. 관련 근거, 2. 사전답사 주요 계획(일시·장소·대상·예산), 붙임 1, 2 및 끝.을 규정에 맞게 작성해 보세요."></textarea>
+              </div>
+            </div>
+
+            <div>
+              <h3 style="font-size:0.96rem; margin-bottom:0.65rem;">📋 기안문 자동 점검 리포트</h3>
+              <div id="lab2FeedbackBox" class="card" style="background:var(--bg-tertiary); min-height:330px;">
+                <p style="color:var(--text-muted); font-size:0.9rem;">기안문을 작성하거나 <strong>[💡 모범 기안문 채우기]</strong> 후 <strong>[✅ 기안문 조건 채점하기]</strong>를 클릭하세요.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab 3: 나만의 업무 추진계획서 초안 세우기 -->
+      <div id="lab-sub-3" class="sub-panel">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🧪 [실습 3] 나만의 업무 추진계획 초안 세우기 (실습자료 PDF PART 1·2 완벽 구현)</div>
+              <div class="card-subtitle">『(교직실무실습)업무_추진계획_수립_연수_자료.pdf』의 예시('초록 빛깔 생태 스케치')와 실습 학습지를 웹에서 완성합니다.</div>
+            </div>
+            <div style="display:flex; gap:0.4rem;">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLab3Sample()">🌱 '초록 빛깔 생태 스케치' 예시 불러오기</button>
+              <button type="button" class="btn btn-sm btn-primary" onclick="window.completeLab3()">✅ 자가점검 완료 & 계획서 생성</button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <div class="form-group">
+                <label class="form-label">1. 사업명 (멋진 이름을 붙여보세요!)</label>
+                <input type="text" id="lab3Title" class="form-input" value="2026학년도 '초록 빛깔 생태 스케치' 운영 계획" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">2. 이 사업의 핵심 목적은 무엇인가요? (Why)</label>
+                <textarea id="lab3Purpose" class="form-textarea" style="min-height:75px;">• 생태 관찰 및 텃밭 가꾸기 활동을 통한 학생들의 생태 감수성 함양
+• 학생 주도적 프로젝트 활동을 통한 문제 해결 능력 및 협동심 고취</textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">3. 주요 프로그램 및 일정 (What & When)</label>
+                <textarea id="lab3Schedule" class="form-textarea" style="min-height:95px;">• 4월~5월 | 우리 학교 식물 지도 만들기 | 3학년 전원 | 교내 서식 식물 관찰 및 특징 기록
+• 6월~10월 | '성산 생태 수호대' 동아리 | 희망 학생 | 텃밭 작물 재배 및 생태 신문 발행
+• 11월 | 생태 스케치 결과 공유회 | 전교생 | 프로젝트 결과물 전시 및 소감 발표</textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">4. 예산 산출 내역 (How much — 단가 × 수량 × 횟수)</label>
+                <textarea id="lab3Budget" class="form-textarea" style="min-height:80px;">• 재배 모종 구입(교육운영비): 2,000원 × 100개 × 1회 = 200,000원 (상추, 방울토마토 등)
+• 관찰 기록 도구(교육운영비): 5,000원 × 25명 × 4학급 = 500,000원 (관찰 수첩 및 색연필)
+• 합계: 700,000원</textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">5. 안전 관리 및 우천 시 대안 (Plan B)</label>
+                <textarea id="lab3Safety" class="form-textarea" style="min-height:70px;">• 야외 관찰 시 사전 안전 교육 실시(독충 주의 및 모종삽 등 도구 안전 사용법)
+• 우천 시 활동 장소를 교실 내 식물 도감 탐구 및 생태 세밀화 그리기 활동으로 변경(Plan B)</textarea>
+              </div>
+
+              <div style="padding:0.9rem; background:var(--bg-tertiary); border-radius:var(--radius-sm);">
+                <div style="font-weight:700; font-size:0.88rem; margin-bottom:0.5rem;">☑️ 5. 자가 점검 체크리스트 (핵심 키포인트)</div>
+                <label class="check-item" style="margin-bottom:0.4rem;">
+                  <input type="checkbox" id="lab3Chk1" checked />
+                  <span style="font-size:0.85rem;"><strong>구체성</strong>: 처음 보는 사람도 이 계획서만 보고 실행할 수 있는가?</span>
+                </label>
+                <label class="check-item" style="margin-bottom:0.4rem;">
+                  <input type="checkbox" id="lab3Chk2" checked />
+                  <span style="font-size:0.85rem;"><strong>정확성</strong>: 예산 산출 근거가 명확하고 지침(단가 등)을 준수했는가?</span>
+                </label>
+                <label class="check-item" style="margin-bottom:0;">
+                  <input type="checkbox" id="lab3Chk3" checked />
+                  <span style="font-size:0.85rem;"><strong>대비성</strong>: 예상되는 안전사고나 돌발 상황(우천 등 Plan B)에 대한 대책이 있는가?</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.65rem;">
+                <h3 style="font-size:0.96rem;">📄 완성된 업무 추진계획서 문서 미리보기</h3>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.copyLab3Plan()">📋 계획서 복사</button>
+              </div>
+              <div id="lab3PreviewBox" class="edufine-preview"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 6: 🏆 실무 퀴즈 & 학교회계 FAQ 사전 (Idea 4-B)
+    =========================================== -->
+    <section id="tab-quiz" class="tab-panel">
+      <div class="sub-nav">
+        <button type="button" class="sub-tab active" data-sub="quiz-sub-play">🏆 교직실무 마스터 퀴즈 (20문항)</button>
+        <button type="button" class="sub-tab" data-sub="quiz-sub-faq">📘 한눈에 쏙쏙! 학교회계 FAQ 20문 20답 & 부록 사전</button>
+      </div>
+
+      <!-- Sub 6-1: 교직실무 퀴즈 -->
+      <div id="quiz-sub-play" class="sub-panel active">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🏆 2027 초등 1급 정교사 「교직실무」 종합 능력평가 (20문항)</div>
+              <div class="card-subtitle">공문서 작성, 공공언어, 원가통계비목, 강사료 계산, 품의 회수, 개산급 정산, 보직교사 역할 전 범위 문제를 풀어보세요.</div>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <span id="quizScoreBadge" class="badge badge-blue">점수: 0 / 20</span>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.resetQuiz()">🔄 퀴즈 다시 풀기</button>
+            </div>
+          </div>
+
+          <div id="quizListContainer" style="display:grid; gap:1rem;"></div>
+        </div>
+      </div>
+
+      <!-- Sub 6-2: 학교회계 FAQ 20문 20답 -->
+      <div id="quiz-sub-faq" class="sub-panel">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📘 전라남도교육청 『한눈에 쏙쏙!! 학교회계 FAQ』 전체 아카이브</div>
+              <div class="card-subtitle">예산편성(Q01~07) · 세출집행(Q08~19) · 집행잔액(Q20) · 부록1(업무추진비) · 부록2(관리자 역할)</div>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <select id="faqCatFilter" class="form-select" style="width:auto;">
+                <option value="ALL">전체 분야</option>
+                <option value="예산편성">예산편성 (Q01~Q07)</option>
+                <option value="세출집행">세출집행 (Q08~Q19)</option>
+                <option value="집행잔액">집행잔액 (Q20)</option>
+                <option value="부록1(업무추진비)">부록1 (업무추진비·경조사비)</option>
+                <option value="부록2(관리자역할)">부록2 (관리자 역할)</option>
+              </select>
+              <input type="text" id="faqSearchInput" class="form-input" style="width:240px;" placeholder="FAQ 키워드 검색..." />
+            </div>
+          </div>
+
+          <div id="faqAccordionContainer"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 글로벌 통합 검색 모달 (Ctrl+K) -->
+  <div id="searchModalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle">
+    <div class="modal-card">
+      <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display:flex; align-items:center; gap:0.75rem;">
+        <span style="font-size:1.1rem;">🔍</span>
+        <input
+          type="text"
+          id="globalSearchModalInput"
+          class="form-input"
+          style="border:none; box-shadow:none; font-size:1rem; padding:0.25rem;"
+          placeholder="공문서 표기, 순화어, 원가통계비목, 강사료, 보직 업무, 회계 FAQ 검색..."
+        />
+        <button type="button" class="btn btn-sm btn-secondary" onclick="window.closeSearchModal()">ESC 닫기</button>
+      </div>
+      <div id="globalSearchResults" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 컨테이너 -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- 데이터 및 앱 스크립트 -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
