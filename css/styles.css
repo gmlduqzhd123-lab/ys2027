@@ -1643,3 +1643,16 @@ code {
     display: block !important;
   }
 }
+
+/* 엽쌤 공통: 하단 문구, 휴대폰에서 "앱 " 숨김 */
+.ys-credit { margin: 2rem 0 1rem; text-align: center; font-size: .8rem; color: var(--text-muted, #64748b); }
+.ys-credit a { color: inherit; }
+@media (max-width: 768px) { .ys-wide { display: none; } }
+@media (max-width: 768px) {
+  .header-actions { flex: 1 1 100%; max-width: none; gap: 0.35rem; }
+  .global-search-wrap { flex: 1 1 40px; min-width: 40px; }
+  .header-actions .icon-btn { padding: 0.45rem 0.5rem; flex: 0 0 auto; }
+  #openSettingsBtn span, #themeLabel { display: none; }
+}
+/* 휴대폰에서 표가 든 카드가 화면 밖으로 밀려나지 않게 (표는 카드 안에서 가로 스크롤) */
+.grid-2 > *, .grid-3 > *, .grid-4 > * { min-width: 0; }

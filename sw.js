@@ -1,4 +1,5 @@
-const CACHE_NAME = "ys2027-edupotal-v2.1";
+const CACHE_NAME = "ys2027-edupotal-v2.2";
+const CACHE_PREFIX = "ys2027-"; // 같은 주소의 다른 앱 캐시는 지우지 않는다
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,7 +11,9 @@ const ASSETS = [
   "./icons/icon.svg",
   "./icons/icon-180.png",
   "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icons/icon-512.png",
+  "./ys-install.js",
+  "./ys-qr.js"
 ];
 
 self.addEventListener("install", (event) => {
@@ -28,7 +31,7 @@ self.addEventListener("message", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
