@@ -7,6 +7,7 @@
   <title>슬기로운 교직실무 올인원 포털 | 2027 초등 1급 정교사 자격연수</title>
   <meta name="description" content="2027 초등 1급 정교사 자격연수(교직실무) 강의안 및 참고자료 기반 공문서 린터, 기안문 빌더, 학교회계 비목 마법사·강사료·개산급 정산, 8대 보직 한해살이, 연수 실습·퀴즈 통합 PWA 웹앱" />
   <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png" />
   <link rel="manifest" href="./manifest.json" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -15,14 +16,14 @@
   <!-- 상단 고정 헤더 -->
   <header class="app-header">
     <div class="header-top">
-      <div class="brand-wrap" onclick="window.switchMainTab('tab-home')" role="button" tabindex="0">
+      <div class="brand-wrap" onclick="window.switchMainTab('tab-home')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.switchMainTab('tab-home');}" role="button" tabindex="0">
         <div class="brand-logo" aria-hidden="true">
           <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="m9 9.5 2 2 4-4"/></svg>
         </div>
         <div>
           <div class="brand-title">
             슬기로운 교직실무 포털
-            <span class="brand-badge">2027 초등 1정 연수 v2.0</span>
+            <span class="brand-badge">2027 초등 1정 연수 v2.1</span>
           </div>
           <div class="brand-subtitle">
             <span>성찰하는 교사 성장하는 교실 2</span>
@@ -51,9 +52,18 @@
           <span>앱 설치</span>
         </button>
 
+        <button type="button" id="openQrShareBtn" class="icon-btn" title="현재 화면 QR 코드로 연수생과 공유">
+          <svg class="svg-icon svg-icon-sm" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2"/></svg>
+          <span>QR</span>
+        </button>
+
+        <button type="button" id="fontScaleToggleBtn" class="icon-btn" title="빔프로젝터·연수 강사용 큰 글씨 모드">
+          <span id="fontScaleLabel">가+</span>
+        </button>
+
         <button type="button" id="openSettingsBtn" class="icon-btn" title="내 학교 설정 · JSON 백업/복원">
           <svg class="svg-icon svg-icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>설정·백업</span>
+          <span>설정</span>
         </button>
 
         <button type="button" id="themeToggleBtn" class="icon-btn" title="다크/라이트 모드 전환">
@@ -320,16 +330,32 @@
                 <div style="font-weight:700; margin-bottom:0.35rem;">공문서 발송 전 3대 필수 체크리스트 (강의안 p.14)</div>
                 <div class="stack-sm text-xs">
                   <div>• <strong>제목 명확성</strong>: 핵심 내용이 한눈에 드러나며 '~에 관한 건' 등 불필요한 수식어를 제거했는가?</div>
-                  <div>• <strong>항목·붙임 완결성</strong>: 항목 위계(1.→가.→1)), 표 끝 '이하 빈칸', 첨부물 1개/복수 구분 및 '끝.' 표기가 정확한가?</div>
-                  <div>• <strong>어문규범·시간</strong>: 날짜 마침표 뒤 공백(2026. 7. 17.), 24시간제, 물결표(~) 뒤 '까지' 중복 제거를 확인했는가?</div>
+                  <div>• <strong>항목·붙임 완결성</strong>: 항목 위계(1.→가.→1)), '붙임:' 콜론 금지, 표 끝 '이하 빈칸', 마지막 '  끝.'(2칸 공백)이 정확한가?</div>
+                  <div>• <strong>어문규범·시간</strong>: 날짜 마침표 뒤 공백(2026. 7. 17.), 24시간제, 중복 표현('해마다 매년') 및 순화어를 확인했는가?</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- 공문서 금액 한글 병기 변환기 -->
+        <div class="card mt-2">
+          <div class="card-header">
+            <div>
+              <div class="card-title">공문서 · 계약서 금액 한글 병기 변환기</div>
+              <div class="card-subtitle">숫자 금액을 입력하면 공문서·품의서·계약서 표준 한글 병기(예: 금1,200,000원(금일백이십만원))를 자동 생성합니다.</div>
+            </div>
+            <span class="badge badge-blue">회계 · 기안 실무</span>
+          </div>
+          <div class="row-wrap">
+            <input type="number" id="korAmountInput" class="form-input" style="max-width:240px;" value="1200000" min="0" step="1000" placeholder="금액 숫자 입력 (원)" />
+            <div id="korAmountOutput" class="surface-box font-mono" style="flex:1; min-width:260px; font-weight:700; color:var(--brand-primary);">금1,200,000원(금일백이십만원)</div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="window.copyKorAmount()">병기 문구 복사</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Sub 2-2: 기안문·표 빌더 (내 학교명 + 동적 표 + Rich HTML 복사 + A4 단독 인쇄) -->
+      <!-- Sub 2-2: 기안문·표 빌더 (내 학교명 + 내 기안함 + 동적 표 + Rich HTML 복사 + A4 단독 인쇄) -->
       <div id="doc-sub-builder" class="sub-panel">
         <div class="grid-2">
           <!-- 좌측 입력 폼 -->
@@ -337,13 +363,22 @@
             <div class="card-header">
               <div>
                 <div class="card-title">에듀파인 기안문 · 동적 표 빌더</div>
-                <div class="card-subtitle">내 학교명 자동 반영, 동적 표('이하 빈칸' 자동 처리), 한글·에듀파인 서식 유지 복사를 지원합니다.</div>
+                <div class="card-subtitle">자동 임시저장, 내 기안함 보관, 동적 표('이하 빈칸' 자동 처리), 한글·에듀파인 서식 복사를 지원합니다.</div>
               </div>
               <div class="row-wrap">
                 <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('fieldtrip')">사전답사 예시</button>
                 <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('eco')">생태동아리 예시</button>
                 <button type="button" class="btn btn-sm btn-outline" onclick="window.openSettingsModal()">학교명 변경</button>
               </div>
+            </div>
+
+            <!-- 내 기안함 (다중 기안문 저장·불러오기) -->
+            <div class="surface-box mb-1">
+              <div class="row-between mb-1">
+                <span class="text-xs" style="font-weight:700;">내 기안함 (자주 쓰는 기안문 보관 · 자동 임시저장 적용)</span>
+                <button type="button" class="btn btn-sm btn-primary" onclick="window.saveCurrentDraft()">+ 현재 기안문 저장</button>
+              </div>
+              <div id="builderDraftsBar" class="row-wrap"></div>
             </div>
 
             <div class="grid-2">
@@ -673,58 +708,75 @@
         </div>
       </div>
 
-      <!-- Sub 3-3: 학급운영비 개산급 정산표 · 업무추진비 · 에듀파인 가이드 -->
+      <!-- Sub 3-3: 학급운영비 개산급 정산표 · 업무추진비 · 에듀파인 시뮬레이터 & 가이드 -->
       <div id="budget-sub-guide" class="sub-panel">
         <!-- 학급운영비 개산급 영수증 정산표 계산기 -->
         <div class="card mb-2" id="settlementPrintZone">
+          <div id="settlementInteractiveWrap">
+            <div class="card-header">
+              <div>
+                <div class="card-title">학급운영비 개산급 영수증 정산서 계산기 (FAQ Q14~15)</div>
+                <div class="card-subtitle">수령액과 카드·현금 영수증을 기록하면 잔액과 <strong>집행 완료 후 5일 이내 정산 마감일</strong>을 자동 산출하고 공식 A4 정산서로 인쇄합니다.</div>
+              </div>
+              <div class="row-wrap no-print">
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.addSettlementRow()">+ 영수증 추가</button>
+                <button type="button" class="btn btn-sm btn-success" onclick="window.exportSettlementCsv()">정산내역 CSV</button>
+                <button type="button" class="btn btn-sm btn-outline" onclick="window.printSettlementOfficial()">공식 정산서 A4 인쇄</button>
+              </div>
+            </div>
+
+            <div class="grid-4 mb-1 no-print">
+              <div class="form-group">
+                <label class="form-label">개산급 수령액 (원)</label>
+                <input type="number" id="settleReceived" class="form-input" value="640000" step="10000" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">최종 집행 완료일</label>
+                <input type="date" id="settleEndDate" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">임시출납원 (담임교사명)</label>
+                <input type="text" id="settleTeacher" class="form-input" placeholder="예: 김담임" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">학급명</label>
+                <input type="text" id="settleClassName" class="form-input" value="3학년 1반" />
+              </div>
+            </div>
+
+            <div id="settleSummaryBanner" class="callout callout-info mb-1"></div>
+
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>사용일자</th>
+                    <th>사용업체명</th>
+                    <th>증빙구분</th>
+                    <th>사용내역</th>
+                    <th>사용금액(원)</th>
+                    <th class="no-print">삭제</th>
+                  </tr>
+                </thead>
+                <tbody id="settlementTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- A4 인쇄 전용 공식 개산급 정산서 (입력창 없이 깔끔한 텍스트·날인란 출력) -->
+          <div id="settlementOfficialPrint"></div>
+        </div>
+
+        <!-- K-에듀파인 결재 중 지출품의 회수·연계반송 인터랙티브 모의 체험 시뮬레이터 -->
+        <div class="card mb-2 hide-on-settlement-print">
           <div class="card-header">
             <div>
-              <div class="card-title">학급운영비 개산급 영수증 정산서 계산기 (FAQ Q14~15)</div>
-              <div class="card-subtitle">수령액과 카드·현금 영수증을 기록하면 잔액과 <strong>집행 완료 후 5일 이내 정산 마감일</strong>을 자동 산출합니다.</div>
+              <div class="card-title">K-에듀파인 「지출품의 회수 · 연계반송」 클릭형 모의 체험 시뮬레이터</div>
+              <div class="card-subtitle">강의안 p.56~58 핵심 실습! 실제 K-에듀파인 순서를 직접 버튼으로 눌러 익혀보세요.</div>
             </div>
-            <div class="row-wrap no-print">
-              <button type="button" class="btn btn-sm btn-secondary" onclick="window.addSettlementRow()">+ 영수증 추가</button>
-              <button type="button" class="btn btn-sm btn-success" onclick="window.exportSettlementCsv()">정산내역 CSV</button>
-              <button type="button" class="btn btn-sm btn-outline" onclick="window.printIsolatedZone('settlement')">정산서 A4 인쇄</button>
-            </div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="window.resetRecallSim()">시뮬레이터 초기화</button>
           </div>
-
-          <div class="grid-4 mb-1 no-print">
-            <div class="form-group">
-              <label class="form-label">개산급 수령액 (원)</label>
-              <input type="number" id="settleReceived" class="form-input" value="640000" step="10000" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">최종 집행 완료일</label>
-              <input type="date" id="settleEndDate" class="form-input" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">임시출납원 (담임교사명)</label>
-              <input type="text" id="settleTeacher" class="form-input" placeholder="예: 김담임" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">학급명</label>
-              <input type="text" id="settleClassName" class="form-input" value="3학년 1반" />
-            </div>
-          </div>
-
-          <div id="settleSummaryBanner" class="callout callout-info mb-1"></div>
-
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>사용일자</th>
-                  <th>사용업체명</th>
-                  <th>증빙구분</th>
-                  <th>사용내역</th>
-                  <th>사용금액(원)</th>
-                  <th class="no-print">삭제</th>
-                </tr>
-              </thead>
-              <tbody id="settlementTableBody"></tbody>
-            </table>
-          </div>
+          <div id="edufineRecallSim"></div>
         </div>
 
         <div class="grid-2 mb-2 hide-on-settlement-print">
@@ -851,6 +903,10 @@
               <button type="button" id="roleViewMonthBtn" class="btn btn-sm btn-secondary" onclick="window.setRoleViewMode('month')">이달의 할 일 (월별 통합 뷰)</button>
             </div>
             <div class="row-wrap">
+              <select id="icsYearSelect" class="form-select" style="width:auto; padding:0.35rem 0.65rem; font-size:0.8rem;" title="캘린더 내보내기 학년도 선택">
+                <option value="2026">2026학년도</option>
+                <option value="2027" selected>2027학년도</option>
+              </select>
               <button type="button" class="btn btn-sm btn-outline" onclick="window.exportRoleIcs()">구글·네이버 캘린더(.ics) 내보내기</button>
             </div>
           </div>
@@ -1432,11 +1488,37 @@
     </div>
   </div>
 
+  <!-- 현재 화면 QR 코드 공유 모달 -->
+  <div id="qrModalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+    <div class="modal-card modal-card-sm">
+      <div class="modal-header">
+        <div class="card-title" id="qrModalTitle">현재 화면 QR 코드 공유 (오프라인 생성)</div>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="window.closeQrModal()">닫기</button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <p class="text-sm text-secondary mb-2">연수생이 스마트폰으로 스캔하면 현재 보고 계신 화면으로 즉시 이동합니다.</p>
+        <div id="qrSvgWrap" class="qr-frame mb-2"></div>
+        <div id="qrUrlPreview" class="surface-box font-mono text-xs mb-2" style="word-break:break-all;"></div>
+        <div class="row-wrap" style="justify-content:center;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="window.copyCurrentShareUrl()">현재 화면 링크 복사</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.closeQrModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SW 새 버전 알림 배너 -->
+  <div id="swUpdateBanner" class="sw-update-banner" role="status">
+    <span>새로운 업데이트 버전이 준비되었습니다.</span>
+    <button type="button" id="swReloadBtn" class="btn btn-sm btn-secondary">지금 새로고침</button>
+  </div>
+
   <!-- 토스트 알림 컨테이너 -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-  <!-- 데이터 및 앱 스크립트 -->
+  <!-- 데이터 · QR 엔진 · 앱 스크립트 -->
   <script src="js/data.js"></script>
+  <script src="js/qr.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

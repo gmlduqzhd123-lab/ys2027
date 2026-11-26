@@ -89,6 +89,11 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+html[data-font-scale="large"] {
+  font-size: 18.5px;
 }
 
 body {
@@ -1445,6 +1450,119 @@ code {
   }
 }
 
+/* Edufine Recall Interactive Simulator */
+.sim-window {
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.sim-titlebar {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sim-toolbar {
+  padding: 0.65rem 0.9rem;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sim-body {
+  padding: 0.9rem;
+}
+
+.sim-row {
+  display: grid;
+  grid-template-columns: 36px 95px 1fr 90px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+
+.sim-row.selected {
+  border-color: var(--brand-primary);
+  background: var(--bg-accent);
+}
+
+/* QR Code Share Box */
+.qr-frame {
+  display: inline-flex;
+  padding: 1rem;
+  background: #ffffff;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* Drafts List */
+.draft-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-secondary);
+  font-size: 0.79rem;
+  font-weight: 600;
+}
+
+.draft-chip button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+/* SW Update Banner */
+.sw-update-banner {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  z-index: 1050;
+  background: #1e3a8a;
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sw-update-banner.show {
+  display: flex;
+}
+
+/* Official Print-only Settlement Sheet (hidden on screen) */
+#settlementOfficialPrint {
+  display: none;
+}
+
 /* Isolated A4 Print Styles */
 @media print {
   @page {
@@ -1457,6 +1575,7 @@ code {
   .sub-nav,
   .no-print,
   .toast-container,
+  .sw-update-banner,
   .modal-backdrop {
     display: none !important;
   }
@@ -1472,16 +1591,16 @@ code {
   }
 
   body[data-print-target] .tab-panel,
-  body[data-print-target] .sub-panel,
+  body[data-print-target] .sub-panel {
+    display: none !important;
+  }
+
   body[data-print-target] .card,
   body[data-print-target] .grid-2 > *,
   body[data-print-target] .grid-3 > * {
     border: none !important;
     box-shadow: none !important;
-  }
-
-  body[data-print-target] .print-hide-when-isolated {
-    display: none !important;
+    padding: 0 !important;
   }
 
   body[data-print-target="builder"] #tab-doc,
@@ -1497,13 +1616,15 @@ code {
 
   body[data-print-target="builder"] #edufinePreviewBox,
   body[data-print-target="lab3"] #lab3PreviewBox,
-  body[data-print-target="settlement"] #settlementPrintZone,
+  body[data-print-target="settlement"] #settlementOfficialPrint,
   body[data-print-target="certificate"] #certificatePrintZone {
     display: block !important;
     border: 1.5px solid #1e293b !important;
     box-shadow: none !important;
     padding: 1.5rem !important;
     width: 100% !important;
+    background: #ffffff !important;
+    color: #000000 !important;
   }
 
   body[data-print-target="builder"] #builderFormCol,
@@ -1511,6 +1632,7 @@ code {
   body[data-print-target="lab3"] #lab3FormCol,
   body[data-print-target="lab3"] #lab3HeaderBar,
   body[data-print-target="lab3"] #lab3PreviewHeader,
+  body[data-print-target="settlement"] #settlementInteractiveWrap,
   body[data-print-target="settlement"] .hide-on-settlement-print,
   body[data-print-target="certificate"] #quizMainCard {
     display: none !important;
