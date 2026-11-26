@@ -1,0 +1,36 @@
+{
+  "name": "슬기로운 교직실무 올인원 포털 (2027 초등 1급 정교사 연수)",
+  "short_name": "교직실무 포털",
+  "description": "공문서 린터·기안 빌더, 학교회계 비목·강사료·개산급 정산, 8대 보직 한해살이, 연수 실습·퀴즈를 하나로 담은 초등 교사 실무 포털",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1d4ed8",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "공문서 바른말 린터",
+      "short_name": "공문서 린터",
+      "url": "./index.html#tab-doc/doc-sub-linter"
+    },
+    {
+      "name": "원가통계비목 & 강사료",
+      "short_name": "학교회계",
+      "url": "./index.html#tab-budget/budget-sub-finder"
+    },
+    {
+      "name": "8대 보직 한해살이",
+      "short_name": "보직 업무",
+      "url": "./index.html#tab-role/role-sub-dept"
+    }
+  ]
+}
