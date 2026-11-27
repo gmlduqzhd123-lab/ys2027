@@ -37,7 +37,7 @@
         <div>
           <div class="brand-title">
             슬기로운 교직실무 포털
-            <span class="brand-badge">2027 초등 1정 연수 v2.1</span>
+            <span class="brand-badge">2027 초등 1정 연수 v3.0</span>
           </div>
           <div class="brand-subtitle">
             <span>성찰하는 교사 성장하는 교실 2 · 에듀파인 · 공문서 · 학교회계 · 보직교사 · AI 협업</span>
@@ -85,29 +85,29 @@
       </div>
     </div>
 
-    <!-- 데스크톱 메인 6대 탭 내비게이션 (기획 배지 제거, 실무 중심 명칭) -->
-    <nav class="main-nav" aria-label="주요 메뉴">
-      <button type="button" class="nav-tab active" data-tab="tab-home">
+    <!-- 데스크톱 메인 6대 탭 내비게이션 -->
+    <nav class="main-nav" role="tablist" aria-label="주요 메뉴">
+      <button type="button" class="nav-tab active" role="tab" aria-selected="true" data-tab="tab-home">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         홈 · 대시보드
       </button>
-      <button type="button" class="nav-tab" data-tab="tab-doc">
+      <button type="button" class="nav-tab" role="tab" aria-selected="false" data-tab="tab-doc">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
         공문서 · 기안
       </button>
-      <button type="button" class="nav-tab" data-tab="tab-budget">
+      <button type="button" class="nav-tab" role="tab" aria-selected="false" data-tab="tab-budget">
         <svg class="svg-icon" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
         예산 · 학교회계
       </button>
-      <button type="button" class="nav-tab" data-tab="tab-role">
+      <button type="button" class="nav-tab" role="tab" aria-selected="false" data-tab="tab-role">
         <svg class="svg-icon" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
         보직 · AI협업
       </button>
-      <button type="button" class="nav-tab" data-tab="tab-lab">
+      <button type="button" class="nav-tab" role="tab" aria-selected="false" data-tab="tab-lab">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         연수 실습 <span class="tab-count" id="navLabBadge">0/3</span>
       </button>
-      <button type="button" class="nav-tab" data-tab="tab-quiz">
+      <button type="button" class="nav-tab" role="tab" aria-selected="false" data-tab="tab-quiz">
         <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
         퀴즈 · 회계 FAQ
       </button>
@@ -159,8 +159,8 @@
           <div class="hero-quick-actions">
             <button type="button" class="hero-btn hero-btn-solid" onclick="window.switchMainTab('tab-doc', 'doc-sub-linter')">공문서 바로 교정</button>
             <button type="button" class="hero-btn" onclick="window.switchMainTab('tab-budget', 'budget-sub-finder')">비목 3초 찾기</button>
+            <button type="button" class="hero-btn" onclick="window.switchMainTab('tab-budget', 'budget-sub-tools')">출장 여비·수의계약</button>
             <button type="button" class="hero-btn" onclick="window.switchMainTab('tab-role', 'role-sub-dept')">이달의 보직 업무</button>
-            <button type="button" class="hero-btn" onclick="window.switchMainTab('tab-lab', 'lab-sub-1')">연수 실습 시작</button>
           </div>
         </div>
         <div class="hero-stats">
@@ -180,6 +180,31 @@
             <div class="hero-stat-num" id="statLintCount">0 회</div>
             <div class="hero-stat-label">공문서 린터 점검</div>
           </div>
+        </div>
+      </div>
+
+      <!-- 오늘의 실무 워크스페이스 허브 (v3.0: 이달의 보직 할 일 + 최근 작업 이어하기) -->
+      <div class="grid-2 mb-3" id="homeWorkspaceHub">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title" id="homeMonthTasksTitle">이달의 내 보직 할 일</div>
+              <div class="card-subtitle">홈에서 바로 완료 체크하고 전체 월별 타임라인으로 이동하세요.</div>
+            </div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="window.openRoleMonthView()">월별 전체 보기 →</button>
+          </div>
+          <div id="homeMonthTasksWidget"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">최근 작업 이어하기 & 실무 알림</div>
+              <div class="card-subtitle">작성 중인 기안문, 개산급 정산 마감 D-Day, 미완료 실습으로 1클릭 복귀합니다.</div>
+            </div>
+            <span class="badge badge-blue">자동 임시저장</span>
+          </div>
+          <div id="homeQuickResumeWidget" class="stack-sm"></div>
         </div>
       </div>
 
@@ -283,24 +308,28 @@
          TAB 2: 공문서 · 기안
     =========================================== -->
     <section id="tab-doc" class="tab-panel">
-      <div class="sub-nav">
-        <button type="button" class="sub-tab active" data-sub="doc-sub-linter">공문서 바른말 린터</button>
-        <button type="button" class="sub-tab" data-sub="doc-sub-builder">기안문·표 빌더 (A4 인쇄)</button>
-        <button type="button" class="sub-tab" data-sub="doc-sub-dict">공공언어·행정용어 순화 사전</button>
+      <div class="sub-nav" role="tablist" aria-label="공문서 세부 도구">
+        <button type="button" class="sub-tab active" role="tab" aria-selected="true" data-sub="doc-sub-linter">공문서 바른말 린터</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="doc-sub-builder">기안문·표 빌더 (A4 인쇄)</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="doc-sub-dict">공공언어·행정용어 순화 사전</button>
       </div>
 
-      <!-- Sub 2-1: 실시간 공문서 린터 (인라인 밑줄 + 실행 취소 + 위계 검증) -->
+      <!-- Sub 2-1: 실시간 공문서 린터 v3 (24시간제 자동변환 + 오프셋 정확 치환 + 문서성격 어조 검증) -->
       <div id="doc-sub-linter" class="sub-panel active">
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">공문서 어문규범 · 표기 · 항목 위계 자동 교정기 (Edulinter v2)</div>
-              <div class="card-subtitle">날짜·시간·항목 위계 건너뛰기·제목 수식어·외래어·일본어 투·행정용어를 본문 인라인 밑줄로 시각화하고 원클릭 교정합니다.</div>
+              <div class="card-title">공문서 어문규범 · 24시간제 · 항목 위계 자동 교정기 (Edulinter v3)</div>
+              <div class="card-subtitle">날짜·24시간제 자동 변환·항목 위계·들여쓰기·천 단위 쉼표·내부결재 어조·일본어 투를 정확 위치로 교정합니다.</div>
             </div>
             <div class="row-wrap">
-              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLinterSample(0)">예문 1 (체험학습 오류)</button>
-              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLinterSample(1)">예문 2 (연수·물품 오류)</button>
-              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLinterSample(2)">예문 3 (표준 모범문)</button>
+              <select id="lintDocModeSelect" class="form-select" style="width:auto; padding:0.35rem 0.65rem; font-size:0.8rem;" aria-label="공문서 성격 선택">
+                <option value="external">대외발송 (타 기관·학부모)</option>
+                <option value="internal">내부결재 (학교 내부 기안)</option>
+              </select>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLinterSample(0)">예문 1 (체험학습)</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLinterSample(1)">예문 2 (연수·물품)</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadLinterSample(2)">예문 3 (표준 모범)</button>
             </div>
           </div>
 
@@ -319,6 +348,7 @@
                 <button type="button" id="applyAllFixesBtn" class="btn btn-success">오류 일괄 자동 교정</button>
                 <button type="button" id="undoLintBtn" class="btn btn-secondary" disabled>실행 취소 (Undo)</button>
                 <button type="button" class="btn btn-secondary" onclick="window.copyCorrectedDoc()">교정본 복사</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="window.switchMainTab('tab-doc', 'doc-sub-builder')">기안문 빌더 열기 →</button>
               </div>
 
               <!-- 인라인 하이라이트 미리보기 -->
@@ -375,11 +405,15 @@
             <div class="card-header">
               <div>
                 <div class="card-title">에듀파인 기안문 · 동적 표 빌더</div>
-                <div class="card-subtitle">자동 임시저장, 내 기안함 보관, 동적 표('이하 빈칸' 자동 처리), 한글·에듀파인 서식 복사를 지원합니다.</div>
+                <div class="card-subtitle">빈 항목 기호 자동 재정렬, 6종 실무 프리셋, 내 기안함 보관, 서식 복사를 지원합니다.</div>
               </div>
               <div class="row-wrap">
-                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('fieldtrip')">사전답사 예시</button>
-                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('eco')">생태동아리 예시</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('fieldtrip')">사전답사</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('eco')">생태동아리</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('instructor')">외부강사</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('purchase')">물품품의</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('letter')">가정통신문</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.loadBuilderPreset('openclass')">공개수업</button>
               </div>
             </div>
 
@@ -468,17 +502,18 @@
             </div>
           </div>
 
-          <!-- 우측 에듀파인 실시간 미리보기 -->
-          <div class="card">
+          <!-- 우측 에듀파인 실시간 미리보기 (데스크톱 스크롤 따라옴) -->
+          <div class="card sticky-preview-col" id="builderPreviewCard">
             <div class="card-header" id="builderPreviewHeader">
               <div>
                 <div class="card-title">K-에듀파인 기안문 실시간 미리보기</div>
-                <div class="card-subtitle">한글(HWP)·에듀파인 붙여넣기용 서식 복사와 A4 단독 인쇄를 지원합니다.</div>
+                <div class="card-subtitle">한글(HWP)·에듀파인 붙여넣기용 서식 복사와 린터 최종 점검을 지원합니다.</div>
               </div>
               <div class="row-wrap">
-                <button type="button" class="btn btn-sm btn-primary" onclick="window.copyBuilderRichHtml()">표 서식 복사 (HWP/에듀파인)</button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="window.copyBuilderRichHtml()">표 서식 복사</button>
                 <button type="button" class="btn btn-sm btn-secondary" onclick="window.copyBuilderOutput()">텍스트 복사</button>
-                <button type="button" class="btn btn-sm btn-outline" onclick="window.printIsolatedZone('builder')">A4 단독 인쇄</button>
+                <button type="button" class="btn btn-sm btn-success" onclick="window.sendBuilderToLinter()">린터로 최종 점검</button>
+                <button type="button" class="btn btn-sm btn-outline" onclick="window.printIsolatedZone('builder')">A4 인쇄</button>
               </div>
             </div>
 
@@ -528,10 +563,11 @@
          TAB 3: 예산 · 학교회계
     =========================================== -->
     <section id="tab-budget" class="tab-panel">
-      <div class="sub-nav">
-        <button type="button" class="sub-tab active" data-sub="budget-sub-finder">원가통계비목 3초 마법사 & 비교표</button>
-        <button type="button" class="sub-tab" data-sub="budget-sub-calc">강사료 · 성립전 예산 · 품의 CSV 생성</button>
-        <button type="button" class="sub-tab" data-sub="budget-sub-guide">개산급 정산표 · 업무추진비 · 에듀파인 가이드</button>
+      <div class="sub-nav" role="tablist" aria-label="학교회계 세부 도구">
+        <button type="button" class="sub-tab active" role="tab" aria-selected="true" data-sub="budget-sub-finder">원가통계비목 3초 마법사 & 비교표</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="budget-sub-calc">강사료 · 성립전 예산 · 품의 CSV</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="budget-sub-tools">출장 여비 · 수의계약 판별기</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="budget-sub-guide">개산급 정산 · 에듀파인 시뮬레이터 · 한도</button>
       </div>
 
       <!-- Sub 3-1: 원가통계비목 3초 마법사 & 파인더 -->
@@ -621,6 +657,7 @@
             <div class="row-wrap">
               <button type="button" class="btn btn-primary" onclick="window.addInstructorToBudget()">+ 성립전 예산표에 추가</button>
               <button type="button" class="btn btn-secondary" onclick="window.copyInstructorFormula()">산출식만 복사</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="window.sendInstructorToBuilder()">기안문 예산란 반영 →</button>
             </div>
           </div>
 
@@ -679,7 +716,10 @@
               <button type="button" class="btn btn-sm btn-secondary mt-1" onclick="window.addCustomPreBudgetRow()">+ 행 추가</button>
             </div>
 
-            <button type="button" class="btn btn-primary btn-block" onclick="window.copyPreBudgetDoc()">성립전 예산 요구 기안문 + 세출·세입표 전체 복사</button>
+            <div class="row-wrap">
+              <button type="button" class="btn btn-primary" style="flex:1;" onclick="window.copyPreBudgetDoc()">성립전 예산 요구 기안문 + 표 전체 복사</button>
+              <button type="button" class="btn btn-outline" onclick="window.sendPreBudgetToBuilder()">기안문 예산란 반영 →</button>
+            </div>
           </div>
         </div>
 
@@ -697,7 +737,7 @@
           </div>
 
           <div class="table-wrap mb-1">
-            <table class="data-table">
+            <table class="data-table responsive-stack-table">
               <thead>
                 <tr>
                   <th>품명</th>
@@ -714,7 +754,140 @@
           </div>
           <div class="row-between">
             <span class="text-xs text-muted">Tip: 내려받은 CSV를 엑셀에서 열어 K-에듀파인 [품의등록 > 서식다운로드] 양식에 그대로 복사·붙여넣기 하세요.</span>
-            <strong id="pumuiCsvTotalDisplay" style="color:var(--brand-primary);">총 품의 예상액: 0원</strong>
+            <strong id="pumuiCsvTotalDisplay" class="tabular-nums" style="color:var(--brand-primary);">총 품의 예상액: 0원</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub 3-3 (NEW v3.0): 공무원 국내 출장 여비 계산기 & 물품·용역 계약 방법 판별기 -->
+      <div id="budget-sub-tools" class="sub-panel">
+        <div class="grid-2">
+          <!-- 좌측: 공무원 국내 출장 여비 자동 계산기 -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">공무원 국내 출장 여비 자동 계산기</div>
+                <div class="card-subtitle">공무원 여비 규정 현행 기준(관내 1만/2만 · 관외 일비 2.5만·식비 2.5만·숙박비 상한 · 공용차량 감액)</div>
+              </div>
+              <span class="badge badge-blue">여비 (B10-01)</span>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="travelScopeSelect">출장 구분</label>
+                <select id="travelScopeSelect" class="form-select">
+                  <option value="in">근무지 내 출장 (관내)</option>
+                  <option value="out">근무지 외 출장 (관외)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="travelPeople">출장 인원 (명)</label>
+                <input type="number" id="travelPeople" class="form-input" value="1" min="1" max="50" />
+              </div>
+            </div>
+
+            <!-- 관내 전용 옵션 -->
+            <div id="travelInOptions" class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="travelInHours">출장 시간</label>
+                <select id="travelInHours" class="form-select">
+                  <option value="under4">4시간 미만 (10,000원)</option>
+                  <option value="over4" selected>4시간 이상 (20,000원)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="travelInCar">공용차량 이용 여부</label>
+                <select id="travelInCar" class="form-select">
+                  <option value="no">미이용 (전액 지급)</option>
+                  <option value="yes">공용차량 이용 (10,000원 감액)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 관외 전용 옵션 -->
+            <div id="travelOutOptions" style="display:none;">
+              <div class="grid-3">
+                <div class="form-group">
+                  <label class="form-label" for="travelDays">출장 일수 (일)</label>
+                  <input type="number" id="travelDays" class="form-input" value="1" min="1" max="30" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="travelNights">숙박 박수 (박)</label>
+                  <input type="number" id="travelNights" class="form-input" value="0" min="0" max="29" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="travelRegion">숙박 지역 상한</label>
+                  <select id="travelRegion" class="form-select">
+                    <option value="other">그 밖의 지역 (7만)</option>
+                    <option value="metro">광역시 (8만)</option>
+                    <option value="seoul">서울특별시 (10만)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="travelFare">1인당 왕복 운임 실비 (원)</label>
+                  <input type="number" id="travelFare" class="form-input" value="0" min="0" step="1000" placeholder="철도·버스·유류비 등" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="travelOutCar">공용차량 이용 여부</label>
+                  <select id="travelOutCar" class="form-select">
+                    <option value="no">미이용 (일비 25,000원)</option>
+                    <option value="yes">공용차량 이용 (일비 1/2 감액 · 12,500원)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div id="travelResultBox" class="callout callout-info mb-1 tabular-nums"></div>
+
+            <div class="row-wrap">
+              <button type="button" class="btn btn-primary" onclick="window.copyTravelFormula()">여비 산출식 복사</button>
+              <button type="button" class="btn btn-outline" onclick="window.sendTravelToBuilder()">기안문 예산란 반영 →</button>
+            </div>
+          </div>
+
+          <!-- 우측: 물품·용역·공사 계약 방법(수의/S2B/G2B) 판별기 -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">물품 · 용역 · 공사 계약 방법 판별기</div>
+                <div class="card-subtitle">지방계약법 시행령 제25·30조 기준 추정가격 환산 및 필수 첨부서류 자동 체크리스트</div>
+              </div>
+              <span class="badge badge-amber">사전 품의 필수</span>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="contractTypeSelect">계약 유형</label>
+                <select id="contractTypeSelect" class="form-select">
+                  <option value="goods">물품 구입 (교구·비품·학습준비물)</option>
+                  <option value="service">용역 계약 (체험버스·인쇄·청소 등)</option>
+                  <option value="constGeneral">종합공사 (건축·토목)</option>
+                  <option value="constSpecial">전문공사 (도장·방수·실내건축 등)</option>
+                  <option value="constOther">기타공사 (전기·통신·소방 등)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="contractVatMode">입력 금액 기준</label>
+                <select id="contractVatMode" class="form-select">
+                  <option value="incl">부가세 포함 금액 (추정금액)</option>
+                  <option value="excl">부가세 제외 금액 (추정가격)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="contractAmountInput">예상 계약 금액 (원)</label>
+              <input type="number" id="contractAmountInput" class="form-input" value="15000000" min="0" step="100000" placeholder="예: 15000000" />
+            </div>
+
+            <label class="check-item mb-1" style="margin-bottom:0.85rem;">
+              <input type="checkbox" id="contractPreferredCheck" />
+              <span class="text-sm"><strong>여성·장애인·사회적기업·중증장애인생산품 등 우대기업</strong> (물품·용역 1인 수의 한도 5천만 원 특례)</span>
+            </label>
+
+            <div id="contractResultBox" class="stack-sm tabular-nums"></div>
           </div>
         </div>
       </div>
@@ -758,7 +931,7 @@
             <div id="settleSummaryBanner" class="callout callout-info mb-1"></div>
 
             <div class="table-wrap">
-              <table class="data-table">
+              <table class="data-table responsive-stack-table">
                 <thead>
                   <tr>
                     <th>사용일자</th>
@@ -778,16 +951,21 @@
           <div id="settlementOfficialPrint"></div>
         </div>
 
-        <!-- K-에듀파인 결재 중 지출품의 회수·연계반송 인터랙티브 모의 체험 시뮬레이터 -->
+        <!-- K-에듀파인 인터랙티브 모의 체험 시뮬레이터 2종 (v3.0: 품의 회수 + 개산급 정산 9단계) -->
         <div class="card mb-2 hide-on-settlement-print">
           <div class="card-header">
             <div>
-              <div class="card-title">K-에듀파인 「지출품의 회수 · 연계반송」 클릭형 모의 체험 시뮬레이터</div>
-              <div class="card-subtitle">강의안 p.56~58 핵심 실습! 실제 K-에듀파인 순서를 직접 버튼으로 눌러 익혀보세요.</div>
+              <div class="card-title">K-에듀파인 핵심 실무 클릭형 모의 체험 시뮬레이터 (2종)</div>
+              <div class="card-subtitle">강의안 p.56~62 핵심 실습! 지출품의 회수·연계반송과 개산급 정산등록 9단계를 직접 눌러 익혀보세요.</div>
             </div>
-            <button type="button" class="btn btn-sm btn-secondary" onclick="window.resetRecallSim()">시뮬레이터 초기화</button>
+            <div class="row-wrap">
+              <button type="button" id="simTabRecallBtn" class="btn btn-sm btn-primary" onclick="window.switchEdufineSim('recall')">① 품의 회수 · 연계반송</button>
+              <button type="button" id="simTabSettleBtn" class="btn btn-sm btn-secondary" onclick="window.switchEdufineSim('settle')">② 개산급 정산등록 9단계</button>
+              <button type="button" class="btn btn-sm btn-outline" onclick="window.resetActiveEdufineSim()">현재 시뮬 초기화</button>
+            </div>
           </div>
           <div id="edufineRecallSim"></div>
+          <div id="edufineSettleSim" style="display:none;"></div>
         </div>
 
         <div class="grid-2 mb-2 hide-on-settlement-print">
@@ -881,10 +1059,10 @@
          TAB 4: 보직 · AI협업
     =========================================== -->
     <section id="tab-role" class="tab-panel">
-      <div class="sub-nav">
-        <button type="button" class="sub-tab active" data-sub="role-sub-dept">8대 보직 한해살이 & 월별 타임라인</button>
-        <button type="button" class="sub-tab" data-sub="role-sub-tools">업무DB · 문서등록대장 · 4대 협업 도구</button>
-        <button type="button" class="sub-tab" data-sub="role-sub-ai">전남교육 AI & 개인정보 가드 프롬프트</button>
+      <div class="sub-nav" role="tablist" aria-label="보직 및 협업 세부 도구">
+        <button type="button" class="sub-tab active" role="tab" aria-selected="true" data-sub="role-sub-dept">8대 보직 한해살이 & 월별 타임라인</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="role-sub-tools">업무DB · 문서등록대장 · 4대 협업 도구</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="role-sub-ai">전남교육 AI & 개인정보 가드 프롬프트</button>
       </div>
 
       <!-- Sub 4-1: 8대 기능부장 한해살이 (복수 겸임 선택 + 월별 타임라인 + 커스텀 업무 + .ics) -->
@@ -1072,10 +1250,10 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <div class="card-title">JneGPT 안전 프롬프트 생성기 (개인정보 실시간 감지 가드)</div>
-                <div class="card-subtitle">주민번호·전화번호·이메일 등 민감정보가 입력되면 자동으로 경고하고 마스킹 버튼을 제공합니다.</div>
+                <div class="card-title">JneGPT 안전 프롬프트 생성기 (개인정보 실시간 감지 가드 v3)</div>
+                <div class="card-subtitle">주민번호·전화·이메일·계좌번호·차량번호·학반+학생 실명을 실시간 감지하고 1클릭 비식별화합니다.</div>
               </div>
-              <span class="badge badge-red">PII Guard 작동 중</span>
+              <span class="badge badge-red">PII Guard v3</span>
             </div>
 
             <div class="callout callout-danger mb-1 text-xs">
@@ -1105,7 +1283,10 @@
               <textarea id="aiPromptOutput" class="form-textarea" style="min-height: 155px;" readonly></textarea>
             </div>
 
-            <button type="button" class="btn btn-primary btn-block" onclick="window.copyAiPrompt()">생성된 안전 프롬프트 복사하기</button>
+            <div class="row-wrap">
+              <button type="button" class="btn btn-primary" style="flex:1;" onclick="window.copyAiPrompt()">생성된 안전 프롬프트 복사하기</button>
+              <button type="button" class="btn btn-outline" onclick="window.openLinterForAiCheck()">AI 초안 린터로 휴먼체크 →</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1115,10 +1296,10 @@
          TAB 5: 연수 실습 워크북 (3종)
     =========================================== -->
     <section id="tab-lab" class="tab-panel">
-      <div class="sub-nav">
-        <button type="button" class="sub-tab active" data-sub="lab-sub-1">실습 1: 성립전 예산 수립 (p.52)</button>
-        <button type="button" class="sub-tab" data-sub="lab-sub-2">실습 2: 사전답사 기안문 (p.40)</button>
-        <button type="button" class="sub-tab" data-sub="lab-sub-3">실습 3: 업무 추진계획 초안 (PDF)</button>
+      <div class="sub-nav" role="tablist" aria-label="연수 실습 선택">
+        <button type="button" class="sub-tab active" role="tab" aria-selected="true" data-sub="lab-sub-1">실습 1: 성립전 예산 수립 (p.52)</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="lab-sub-2">실습 2: 사전답사 기안문 (p.40)</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="lab-sub-3">실습 3: 업무 추진계획 초안 (PDF)</button>
       </div>
 
       <!-- Lab 1 -->
@@ -1335,7 +1516,7 @@
               </div>
             </div>
 
-            <div>
+            <div class="sticky-preview-col">
               <div class="row-between mb-1" id="lab3PreviewHeader">
                 <h3 style="font-size:0.95rem;">완성된 업무 추진계획서 미리보기</h3>
                 <div class="row-wrap">
@@ -1354,21 +1535,22 @@
          TAB 6: 퀴즈 · 회계 FAQ
     =========================================== -->
     <section id="tab-quiz" class="tab-panel">
-      <div class="sub-nav">
-        <button type="button" class="sub-tab active" data-sub="quiz-sub-play">교직실무 마스터 퀴즈 (집중 모드 · 오답 노트)</button>
-        <button type="button" class="sub-tab" data-sub="quiz-sub-faq">학교회계 FAQ 20문 20답 & 부록 사전</button>
+      <div class="sub-nav" role="tablist" aria-label="퀴즈 및 회계 FAQ">
+        <button type="button" class="sub-tab active" role="tab" aria-selected="true" data-sub="quiz-sub-play">교직실무 마스터 퀴즈 (집중 모드 · 발표 모드)</button>
+        <button type="button" class="sub-tab" role="tab" aria-selected="false" data-sub="quiz-sub-faq">학교회계 FAQ 20문 20답 & 부록 사전</button>
       </div>
 
-      <!-- Sub 6-1: 마스터 퀴즈 (집중 모드 / 전체 모드 / 오답 노트 / 영역별 분석 / 이수 리포트) -->
+      <!-- Sub 6-1: 마스터 퀴즈 (집중 모드 / 전체 모드 / 오답 노트 / 강사 발표 모드 / 영역별 분석 / 이수 리포트) -->
       <div id="quiz-sub-play" class="sub-panel active">
         <div class="card mb-2" id="quizMainCard">
           <div class="card-header">
             <div>
               <div class="card-title">2027 초등 1급 정교사 「교직실무」 종합 능력평가 (20문항)</div>
-              <div class="card-subtitle">집중 모드(1문항씩)와 전체 보기 모드를 자유롭게 전환하고, 오답 노트 및 영역별 성취도를 확인하세요.</div>
+              <div class="card-subtitle">키보드 <code>1~4</code> 선택 · <code>←/→</code> 문제 이동 지원 · 연수장 발표 모드에서 정답을 가리고 토론할 수 있습니다.</div>
             </div>
             <div class="row-wrap">
               <span id="quizScoreBadge" class="badge badge-blue">점수: 0 / 20</span>
+              <button type="button" id="quizPresenterToggleBtn" class="btn btn-sm btn-secondary" onclick="window.toggleQuizPresenterMode()">발표 모드: OFF</button>
               <button type="button" class="btn btn-sm btn-outline" onclick="window.printIsolatedZone('certificate')">이수 리포트 인쇄</button>
               <button type="button" class="btn btn-sm btn-secondary" onclick="window.resetQuiz()">다시 풀기</button>
             </div>
@@ -1450,7 +1632,7 @@
           id="globalSearchModalInput"
           class="form-input"
           style="border:none; box-shadow:none; font-size:0.98rem; padding:0.2rem;"
-          placeholder="공문서 표기, 순화어, 원가통계비목, 강사료, 보직 업무, 회계 FAQ 검색..."
+          placeholder="공문서, 비목, 출장여비, 수의계약, 단축키, 보직, FAQ, 빠른 실행(다크·백업·인쇄)..."
         />
         <span class="text-xs text-muted" style="white-space:nowrap;">↑↓ 이동 · Enter 선택</span>
         <button type="button" class="btn btn-sm btn-secondary" onclick="window.closeSearchModal()">ESC</button>

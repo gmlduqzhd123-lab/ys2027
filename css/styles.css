@@ -1250,14 +1250,140 @@ mark.search-hl {
   color: var(--danger);
 }
 
-/* Certificate Card */
+/* Certificate Card (다크모드에서도 종이 문서 색감 격리 유지) */
 .certificate-card {
+  --bg-tertiary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --brand-primary: #1d4ed8;
+  --brand-light: #dbeafe;
+  --success: #059669;
   background: #ffffff;
   color: #0f172a;
   border: 6px double #1e3a8a;
   border-radius: var(--radius-md);
   padding: 2rem;
   text-align: center;
+}
+
+/* Tabular Numbers for Financial & Stats Precision */
+.tabular-nums,
+.hero-stat-num,
+.data-table td,
+#instCalcResultBox,
+#preBudgetStatusPanel,
+#settleSummaryBanner {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sticky Preview Column on Desktop */
+@media (min-width: 769px) {
+  .sticky-preview-col {
+    position: sticky;
+    top: 126px;
+    align-self: start;
+  }
+}
+
+/* Builder Dynamic Table Editor Row */
+.builder-table-row {
+  display: grid;
+  grid-template-columns: 112px 1fr 94px 34px;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+/* Command Palette Search Chips */
+.search-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.14s;
+}
+
+.search-chip:hover {
+  border-color: var(--brand-primary);
+  background: var(--bg-accent);
+  color: var(--brand-primary);
+}
+
+.search-chip-cmd {
+  background: var(--brand-light);
+  border-color: transparent;
+  color: var(--brand-primary);
+}
+
+/* Home Resume Card Row */
+.resume-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.72rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.12s;
+  text-align: left;
+  width: 100%;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+.resume-item:hover {
+  border-color: var(--brand-primary);
+  background: var(--bg-accent);
+  transform: translateY(-1px);
+}
+
+/* Presenter Mode Banner */
+.presenter-banner {
+  background: var(--purple-bg);
+  border: 1.5px solid var(--purple-border);
+  border-left: 4px solid var(--purple);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.9rem;
+  font-size: 0.84rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Contract Checklist */
+.contract-doc-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.contract-doc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.6rem;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 /* Search Modal & Settings Modal */
@@ -1421,20 +1547,65 @@ code {
     background: var(--brand-soft);
   }
 
-  /* Responsive Lab Table Stack */
+  /* Responsive Tables Stack (실습1 · 품의 CSV · 개산급 정산표 모바일 카드형) */
   .responsive-stack-table thead { display: none; }
   .responsive-stack-table tr {
     display: block;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     margin-bottom: 0.75rem;
-    padding: 0.65rem;
+    padding: 0.65rem 0.75rem;
     background: var(--bg-secondary);
   }
   .responsive-stack-table td {
     display: block;
     border: none;
-    padding: 0.35rem 0;
+    padding: 0.32rem 0;
+    width: auto !important;
+  }
+  .responsive-stack-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 0.18rem;
+  }
+
+  /* Sub-nav swipeable single row on mobile */
+  .sub-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sub-nav::-webkit-scrollbar { display: none; }
+  .sub-tab { flex-shrink: 0; font-size: 0.82rem; padding: 0.48rem 0.8rem; }
+
+  /* Builder dynamic table editor compact card on mobile */
+  .builder-table-row {
+    grid-template-columns: 1fr 1fr 34px;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+  }
+  .builder-table-row .btr-content {
+    grid-column: 1 / -1;
+    order: 2;
+  }
+  .builder-table-row .btr-time { order: 0; }
+  .builder-table-row .btr-owner { order: 1; }
+  .builder-table-row .btr-del { order: 1; }
+
+  /* Simulator row responsive layout */
+  .sim-row {
+    grid-template-columns: 28px 1fr;
+    gap: 0.35rem 0.5rem;
+  }
+  .sim-row .sim-status-badge {
+    grid-column: 2;
+    justify-self: start !important;
   }
 }
 
@@ -1630,6 +1801,10 @@ code {
   body[data-print-target="lab3"] #lab-sub-3 .grid-2 {
     display: block !important;
   }
+
+  .sticky-preview-col {
+    position: static !important;
+  }
 }
 
 /* 엽쌤 공통: 하단 문구, 휴대폰에서 "앱 " 숨김 */
@@ -1637,10 +1812,14 @@ code {
 .ys-credit a { color: inherit; }
 @media (max-width: 768px) { .ys-wide { display: none; } }
 @media (max-width: 768px) {
-  .header-actions { flex: 1 1 100%; max-width: none; gap: 0.35rem; }
-  .global-search-wrap { flex: 1 1 40px; min-width: 40px; }
-  .header-actions .icon-btn { padding: 0.45rem 0.5rem; flex: 0 0 auto; }
+  .header-actions { flex: 1 1 100%; max-width: none; gap: 0.35rem; flex-wrap: wrap; }
+  .global-search-wrap { flex: 1 1 140px; min-width: 120px; }
+  .header-actions .icon-btn { padding: 0.45rem 0.52rem; flex: 0 0 auto; }
   #openSettingsBtn span, #themeLabel { display: none; }
+}
+@media (max-width: 540px) {
+  .global-search-wrap { order: 10; flex: 1 1 100%; max-width: none; }
+  .header-actions { justify-content: flex-start; }
 }
 /* 휴대폰에서 표가 든 카드가 화면 밖으로 밀려나지 않게 (표는 카드 안에서 가로 스크롤) */
 .grid-2 > *, .grid-3 > *, .grid-4 > * { min-width: 0; }

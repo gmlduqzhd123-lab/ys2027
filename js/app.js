@@ -1,4 +1,4 @@
-// 2027 초등 1급 정교사 자격연수 「슬기로운 교직실무 올인원 포털 v2.1」 메인 애플리케이션
+// 2027 초등 1급 정교사 자격연수 「슬기로운 교직실무 올인원 포털 v3.0」 메인 애플리케이션
 (function () {
   "use strict";
 
@@ -35,6 +35,7 @@
     selectedDepts: ["dept-academic"],
     customTasks: [],
     savedDrafts: [],
+    recentSearches: [],
     builderDraft: null,
     preBudgetDraft: {
       projectName: "2026년 공생의 길(물길, 숲길) 프로젝트 운영",
@@ -49,6 +50,7 @@
     settlement: {
       received: 640000,
       endDate: new Date().toISOString().slice(0, 10),
+      teacher: "",
       className: "3학년 1반",
       rows: [
         { id: 1, date: "2026-04-06", vendor: "오늘 문구사", proof: "전산자료", desc: "4월 생일 파티 및 학급 게시판 용품", amount: 75000 },
@@ -72,13 +74,17 @@
   let costWizardPath = [];
   let quizMode = "focus";
   let quizFocusIndex = 0;
+  let quizPresenterMode = false;
+  let quizRevealedMap = {};
   let currentSearchResults = [];
   let activeSearchIdx = -1;
-  let deferredInstallPrompt = null;
   let waitingWorker = null;
+  let activeModalReturnFocus = null;
+  let activeEdufineSimTab = "recall";
 
-  // 에듀파인 회수 시뮬레이터 상태
+  // 에듀파인 시뮬레이터 2종 상태
   let recallSim = { stage: 0, checked: false, message: "결재가 진행 중인 '교무실 사무용품 구입' 품의를 수정하려고 합니다. 먼저 해당 문서를 체크해 주세요.", msgType: "info" };
+  let settleSim = { stage: 0, selectedProof: "", message: "학급운영비 개산급을 정산할 차례입니다. 먼저 [1. 수령일 조회] 버튼을 눌러 미정산 건을 불러오세요.", msgType: "info" };
 
   // ==========================================
   // 0. 상태 로드/저장 및 공통 유틸
@@ -106,6 +112,7 @@
         },
         pumuiItems: Array.isArray(parsed.pumuiItems) ? parsed.pumuiItems : clone(defaultPumuiItems),
         savedDrafts: Array.isArray(parsed.savedDrafts) ? parsed.savedDrafts : [],
+        recentSearches: Array.isArray(parsed.recentSearches) ? parsed.recentSearches : [],
         settlement: {
           ...clone(defaultState.settlement),
           ...(parsed.settlement || {}),
@@ -126,6 +133,7 @@
       // ignore storage quota errors
     }
     updateDashboardStats();
+    renderHomeWorkspaceHub();
     renderCertificate();
   }
 
@@ -234,6 +242,20 @@
       });
     });
 
+    // 탭 목록 화살표 키 접근성 지원 (ArrowLeft / ArrowRight)
+    document.querySelectorAll('[role="tablist"]').forEach((tablist) => {
+      tablist.addEventListener("keydown", (e) => {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+        const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+        const idx = tabs.indexOf(document.activeElement);
+        if (idx < 0) return;
+        e.preventDefault();
+        const nextIdx = e.key === "ArrowRight" ? (idx + 1) % tabs.length : (idx - 1 + tabs.length) % tabs.length;
+        tabs[nextIdx].focus();
+        tabs[nextIdx].click();
+      });
+    });
+
     document.getElementById("themeToggleBtn").addEventListener("click", () => {
       appState.theme = appState.theme === "dark" ? "light" : "dark";
       applyTheme(appState.theme);
@@ -292,11 +314,17 @@
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         openSearchModal();
-      } else if (e.key === "Escape") {
-        window.closeSearchModal();
-        window.closeSettingsModal();
-        window.closeQrModal();
+        return;
       }
+      if (e.key === "Escape") {
+        closeAllModals();
+        return;
+      }
+      if (e.key === "Tab") {
+        handleModalFocusTrap(e);
+        return;
+      }
+      handleQuizKeyboardShortcuts(e);
     });
 
     window.addEventListener("afterprint", () => {
@@ -351,22 +379,55 @@
         else window.location.reload();
       });
     }
+    // PWA 설치 프롬프트는 ys-install.js가 단일 관리 (중복 리스너 제거)
+  }
 
-    window.addEventListener("beforeinstallprompt", (e) => {
+  function openModalAccessible(backdropId, initialFocusEl) {
+    const backdrop = document.getElementById(backdropId);
+    if (!backdrop) return;
+    if (!backdrop.classList.contains("open")) {
+      activeModalReturnFocus = document.activeElement;
+    }
+    backdrop.classList.add("open");
+    setTimeout(() => {
+      if (initialFocusEl && initialFocusEl.focus) {
+        initialFocusEl.focus();
+      } else {
+        const firstFocusable = backdrop.querySelector('button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (firstFocusable) firstFocusable.focus();
+      }
+    }, 35);
+  }
+
+  function closeModalAccessible(backdropId) {
+    const backdrop = document.getElementById(backdropId);
+    if (!backdrop || !backdrop.classList.contains("open")) return;
+    backdrop.classList.remove("open");
+    if (activeModalReturnFocus && activeModalReturnFocus.focus && document.contains(activeModalReturnFocus)) {
+      activeModalReturnFocus.focus();
+    }
+    activeModalReturnFocus = null;
+  }
+
+  function closeAllModals() {
+    closeModalAccessible("searchModalBackdrop");
+    closeModalAccessible("settingsModalBackdrop");
+    closeModalAccessible("qrModalBackdrop");
+  }
+
+  function handleModalFocusTrap(e) {
+    const openBackdrop = document.querySelector(".modal-backdrop.open");
+    if (!openBackdrop) return;
+    const focusables = [...openBackdrop.querySelectorAll('button:not(:disabled), [href], input:not([type="hidden"]):not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])')].filter((el) => el.offsetParent !== null);
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
       e.preventDefault();
-      deferredInstallPrompt = e;
-      const btn = document.getElementById("pwaInstallBtn");
-      if (btn) btn.style.display = "inline-flex";
-    });
-    const installBtn = document.getElementById("pwaInstallBtn");
-    if (installBtn) {
-      installBtn.addEventListener("click", async () => {
-        if (!deferredInstallPrompt) return;
-        deferredInstallPrompt.prompt();
-        await deferredInstallPrompt.userChoice;
-        deferredInstallPrompt = null;
-        installBtn.style.display = "none";
-      });
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
     }
   }
 
@@ -396,11 +457,11 @@
     if (window.EduQr && window.EduQr.generateQrSvg) {
       document.getElementById("qrSvgWrap").innerHTML = window.EduQr.generateQrSvg(url, 220);
     }
-    document.getElementById("qrModalBackdrop").classList.add("open");
+    openModalAccessible("qrModalBackdrop");
   };
 
   window.closeQrModal = function () {
-    document.getElementById("qrModalBackdrop").classList.remove("open");
+    closeModalAccessible("qrModalBackdrop");
   };
 
   window.copyCurrentShareUrl = function () {
@@ -422,7 +483,11 @@
   }
 
   window.switchMainTab = function (tabId, subId, pushHash = true) {
-    document.querySelectorAll(".nav-tab, .mobile-nav-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === tabId));
+    document.querySelectorAll(".nav-tab, .mobile-nav-btn").forEach((b) => {
+      const isAct = b.dataset.tab === tabId;
+      b.classList.toggle("active", isAct);
+      if (b.getAttribute("role") === "tab") b.setAttribute("aria-selected", String(isAct));
+    });
     document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("active", p.id === tabId));
     const panel = document.getElementById(tabId);
     let activeSub = subId;
@@ -440,13 +505,19 @@
   function activateSubTab(tabId, subId, pushHash) {
     const panel = document.getElementById(tabId);
     if (!panel) return;
-    panel.querySelectorAll(".sub-tab").forEach((b) => b.classList.toggle("active", b.dataset.sub === subId));
+    panel.querySelectorAll(".sub-tab").forEach((b) => {
+      const isAct = b.dataset.sub === subId;
+      b.classList.toggle("active", isAct);
+      if (b.getAttribute("role") === "tab") b.setAttribute("aria-selected", String(isAct));
+    });
     panel.querySelectorAll(".sub-panel").forEach((p) => p.classList.toggle("active", p.id === subId));
     if (pushHash) updateHash(tabId, subId);
   }
 
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute("content", theme === "dark" ? "#0b1120" : "#1d4ed8");
     const icon = document.getElementById("themeIcon");
     const label = document.getElementById("themeLabel");
     if (icon && label) {
@@ -469,21 +540,25 @@
   function applyProfileToUi() {
     const p = appState.profile;
     const teacherInput = document.getElementById("settleTeacher");
-    if (teacherInput && !teacherInput.value) teacherInput.value = p.teacherName;
+    if (teacherInput && !teacherInput.value) {
+      teacherInput.value = appState.settlement.teacher || p.teacherName;
+    }
   }
 
   window.openSettingsModal = function () {
-    document.getElementById("settingTeacherName").value = appState.profile.teacherName;
-    document.getElementById("settingsModalBackdrop").classList.add("open");
+    const input = document.getElementById("settingTeacherName");
+    input.value = appState.profile.teacherName;
+    openModalAccessible("settingsModalBackdrop", input);
   };
 
   window.closeSettingsModal = function () {
-    document.getElementById("settingsModalBackdrop").classList.remove("open");
+    closeModalAccessible("settingsModalBackdrop");
   };
 
   window.saveUserProfile = function () {
     const teacher = document.getElementById("settingTeacherName").value.trim() || "연수생 교사";
     appState.profile = { teacherName: teacher };
+    appState.settlement.teacher = teacher;
     saveState();
     applyProfileToUi();
 
@@ -581,6 +656,119 @@
     `
       )
       .join("");
+
+    renderHomeWorkspaceHub();
+  }
+
+  window.openRoleMonthView = function () {
+    selectedMonth = new Date().getMonth() + 1;
+    window.switchMainTab("tab-role", "role-sub-dept");
+    renderMonthFilterBar();
+    window.setRoleViewMode("month");
+  };
+
+  function renderHomeWorkspaceHub() {
+    const tasksWrap = document.getElementById("homeMonthTasksWidget");
+    const resumeWrap = document.getElementById("homeQuickResumeWidget");
+    const titleEl = document.getElementById("homeMonthTasksTitle");
+    if (!tasksWrap || !resumeWrap) return;
+
+    const curMonth = new Date().getMonth() + 1;
+    if (titleEl) titleEl.textContent = `${curMonth}월 이달의 내 보직 할 일`;
+
+    const myDepts = window.EDU_DATA.departments.filter((d) => (appState.selectedDepts || ["dept-academic"]).includes(d.id));
+    const monthTasks = [];
+    myDepts.forEach((d) => {
+      const shortDept = d.name.split(" ")[0];
+      d.periods.forEach((p) =>
+        p.tasks.forEach((t) => {
+          const months = (window.EDU_DATA.taskMonthsMap && window.EDU_DATA.taskMonthsMap[t.id]) || [];
+          if (months.includes(curMonth)) monthTasks.push({ id: t.id, title: t.title, dept: shortDept });
+        })
+      );
+      (appState.customTasks || []).forEach((ct) => {
+        if (ct.deptId === d.id && ct.month === curMonth) monthTasks.push({ id: ct.id, title: ct.title, dept: `${shortDept}·추가` });
+      });
+    });
+
+    const doneCnt = monthTasks.filter((t) => appState.checkedTasks && appState.checkedTasks[t.id]).length;
+    const sorted = [...monthTasks].sort((a, b) => Number(Boolean(appState.checkedTasks[a.id])) - Number(Boolean(appState.checkedTasks[b.id]))).slice(0, 4);
+
+    if (monthTasks.length === 0) {
+      tasksWrap.innerHTML = `<div class="surface-box text-sm text-muted" style="text-align:center;">${curMonth}월 등록된 내 부서 과업이 없습니다. 보직 탭에서 담당 부서나 특색 업무를 추가해 보세요.</div>`;
+    } else {
+      const pct = Math.round((doneCnt / monthTasks.length) * 100);
+      tasksWrap.innerHTML = `
+        <div class="row-between text-xs text-muted mb-1">
+          <span>담당 부서: <strong>${escapeHtml(myDepts.map((d) => d.name.split(" ")[0]).join(" · "))}</strong></span>
+          <span>완료 ${doneCnt} / ${monthTasks.length} (${pct}%)</span>
+        </div>
+        <div class="progress-track mb-1"><div class="progress-fill success" style="width:${pct}%;"></div></div>
+        <div>
+          ${sorted
+            .map((t) => {
+              const checked = Boolean(appState.checkedTasks && appState.checkedTasks[t.id]);
+              return `<label class="check-item ${checked ? "checked" : ""}" style="padding:0.5rem 0.72rem; margin-bottom:0.4rem;">
+                <input type="checkbox" ${checked ? "checked" : ""} onchange="window.toggleDeptTask('${t.id}')" />
+                <div style="flex:1; min-width:0;">
+                  <div class="row-between" style="gap:0.4rem;">
+                    <span class="check-title text-sm" style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(t.title)}</span>
+                    <span class="badge badge-blue" style="font-size:0.68rem;">${escapeHtml(t.dept)}</span>
+                  </div>
+                </div>
+              </label>`;
+            })
+            .join("")}
+        </div>
+      `;
+    }
+
+    // 우측: 최근 작업 이어하기
+    const draftTitle = (appState.builderDraft && appState.builderDraft.bTitle) || "2026학년도 1학기 현장체험학습 사전답사 실시 계획";
+    const draftCnt = (appState.savedDrafts || []).length;
+
+    const received = appState.settlement.received || 0;
+    const spent = (appState.settlement.rows || []).reduce((acc, r) => acc + (Number(r.amount) || 0), 0);
+    const remain = received - spent;
+    let dTag = "정산 기한 확인";
+    let dCls = "badge-blue";
+    if (appState.settlement.endDate) {
+      const end = new Date(appState.settlement.endDate + "T00:00:00");
+      const deadline = new Date(end.getTime() + 5 * 24 * 60 * 60 * 1000);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diff = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+      dTag = diff < 0 ? `마감 D+${Math.abs(diff)}` : diff === 0 ? "오늘 마감" : `마감 D-${diff}`;
+      dCls = diff < 0 ? "badge-red" : diff <= 2 ? "badge-amber" : "badge-green";
+    }
+
+    const labsDone = Object.values(appState.labsCompleted || {}).filter(Boolean).length;
+    const nextLabSub = !appState.labsCompleted.lab1 ? "lab-sub-1" : !appState.labsCompleted.lab2 ? "lab-sub-2" : "lab-sub-3";
+    const nextLabText = labsDone === 3 ? "실습 3종 모두 완료!" : !appState.labsCompleted.lab1 ? "다음: 실습 1 (성립전 예산)" : !appState.labsCompleted.lab2 ? "다음: 실습 2 (사전답사 기안문)" : "다음: 실습 3 (업무 추진계획)";
+
+    resumeWrap.innerHTML = `
+      <button type="button" class="resume-item" onclick="window.switchMainTab('tab-doc', 'doc-sub-builder')">
+        <div style="min-width:0; flex:1;">
+          <div class="text-xs text-muted">임시저장 기안문 · 내 기안함 ${draftCnt}건</div>
+          <div style="font-weight:700; font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(draftTitle)}</div>
+        </div>
+        <span class="badge badge-blue">이어쓰기 →</span>
+      </button>
+      <button type="button" class="resume-item" onclick="window.switchMainTab('tab-budget', 'budget-sub-guide')">
+        <div style="min-width:0; flex:1;">
+          <div class="text-xs text-muted">학급운영비 개산급 정산 (${escapeHtml(appState.settlement.className)})</div>
+          <div style="font-weight:700; font-size:0.88rem;" class="tabular-nums">집행 ${formatNumber(spent)}원 · 잔액 ${formatNumber(remain)}원</div>
+        </div>
+        <span class="badge ${dCls}">${escapeHtml(dTag)}</span>
+      </button>
+      <button type="button" class="resume-item" onclick="window.switchMainTab('tab-lab', '${nextLabSub}')">
+        <div style="min-width:0; flex:1;">
+          <div class="text-xs text-muted">연수 실습 워크북 (${labsDone} / 3 완료)</div>
+          <div style="font-weight:700; font-size:0.88rem;">${escapeHtml(nextLabText)}</div>
+        </div>
+        <span class="badge ${labsDone === 3 ? "badge-green" : "badge-amber"}">${labsDone === 3 ? "완료 ✔" : "바로 시작 →"}</span>
+      </button>
+    `;
   }
 
   function updateDashboardStats() {
@@ -620,7 +808,7 @@
   }
 
   // ==========================================
-  // 4. MODULE 2: 공문서 린터 v2.1 (단일패스 비중첩 인라인 하이라이트 + 규칙 보강 + 금액 한글 변환)
+  // 4. MODULE 2: 공문서 린터 v3.0 (24시간제 자동변환 + 오프셋 정확 치환 + 내부결재 어조 + 들여쓰기·천단위 쉼표)
   // ==========================================
   function initLinterModule() {
     window.loadLinterSample(0);
@@ -628,12 +816,14 @@
       appState.lintCount = (appState.lintCount || 0) + 1;
       saveState();
       runDocumentLinter();
-      window.showToast("공문서 어문규범·표기·항목 위계 점검을 완료했습니다.");
+      window.showToast("공문서 어문규범·24시간제·항목 위계 점검을 완료했습니다.");
     });
     document.getElementById("applyAllFixesBtn").addEventListener("click", applyAllLinterFixes);
     document.getElementById("undoLintBtn").addEventListener("click", undoLintChange);
     document.getElementById("lintTitleInput").addEventListener("input", runDocumentLinter);
     document.getElementById("lintBodyInput").addEventListener("input", runDocumentLinter);
+    const modeSel = document.getElementById("lintDocModeSelect");
+    if (modeSel) modeSel.addEventListener("change", runDocumentLinter);
 
     const korAmtEl = document.getElementById("korAmountInput");
     if (korAmtEl) {
@@ -690,7 +880,13 @@
   function runDocumentLinter() {
     const title = document.getElementById("lintTitleInput").value;
     const body = document.getElementById("lintBodyInput").value;
+    const docMode = document.getElementById("lintDocModeSelect")?.value || "external";
     const issues = [];
+
+    const pushBodyIssue = (item) => {
+      if (typeof item.start !== "number" || typeof item.end !== "number" || item.end <= item.start) return;
+      issues.push({ ...item, fixTarget: "body" });
+    };
 
     // 1. 제목 불필요 수식어
     const titleSuffixRegex = /(에 관한 건|에 대하여|에 대한 건|관련의 건)\s*$/;
@@ -715,13 +911,14 @@
       const standard = `${match[1]}. ${match[2]}. ${match[3]}.`;
       const afterChar = body.slice(match.index + full.length, match.index + full.length + 2);
       if (full !== standard && !/^\d/.test(afterChar)) {
-        issues.push({
+        pushBodyIssue({
           type: "error",
           category: "날짜 표기법 (p.11)",
           wrong: full,
           right: standard,
           reason: "날짜의 마침표(.)는 연·월·일을 대체하므로 마침표 뒤를 한 칸씩 띄고 일(日) 뒤에도 마침표를 찍습니다.",
-          fixTarget: "body",
+          start: match.index,
+          end: match.index + full.length,
           wrongRaw: full,
           rightRaw: standard
         });
@@ -731,102 +928,240 @@
     // 3. 날짜와 요일 사이 공백
     const daySpaceRegex = /(\d{1,2}\.)\s+\(([월화수목금토일])\)/g;
     while ((match = daySpaceRegex.exec(body)) !== null) {
-      issues.push({
+      pushBodyIssue({
         type: "warn",
         category: "날짜·요일 표기 (p.11)",
         wrong: match[0],
         right: `${match[1]}(${match[2]})`,
         reason: "날짜 뒤 요일 괄호는 띄지 않고 붙여 씁니다.",
-        fixTarget: "body",
+        start: match.index,
+        end: match.index + match[0].length,
         wrongRaw: match[0],
         rightRaw: `${match[1]}(${match[2]})`
       });
     }
 
-    // 4. 물결표 앞뒤 공백
+    // 4. 12시간제(오전/오후) → 24시간제 자동 변환 (v3.0 신규)
+    const time12hRegex = /(오전|오후)\s*(\d{1,2})시(?:\s*(\d{1,2})분)?/g;
+    while ((match = time12hRegex.exec(body)) !== null) {
+      const ampm = match[1];
+      let hr = parseInt(match[2], 10);
+      const min = match[3] ? parseInt(match[3], 10) : 0;
+      if (hr >= 0 && hr <= 12 && min >= 0 && min <= 59) {
+        if (ampm === "오후" && hr < 12) hr += 12;
+        if (ampm === "오전" && hr === 12) hr = 0;
+        const stdTime = `${String(hr).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+        pushBodyIssue({
+          type: "error",
+          category: "24시간제 시간 표기 (p.11)",
+          wrong: match[0],
+          right: stdTime,
+          reason: "공문서 시간은 '오전/오후' 대신 24시간제(예: 08:00, 15:00)로 표기하는 것이 원칙입니다.",
+          start: match.index,
+          end: match.index + match[0].length,
+          wrongRaw: match[0],
+          rightRaw: stdTime
+        });
+      }
+    }
+
+    // 5. 물결표 앞뒤 공백
     const waveSpaceRegex = /(\S)\s+~\s+(\S)/g;
     while ((match = waveSpaceRegex.exec(body)) !== null) {
-      issues.push({
+      pushBodyIssue({
         type: "warn",
         category: "기간 물결표 표기 (p.11)",
         wrong: match[0],
         right: `${match[1]}~${match[2]}`,
         reason: "기간 물결표(~) 앞뒤는 띄어쓰지 않고 붙여 씁니다.",
-        fixTarget: "body",
+        start: match.index,
+        end: match.index + match[0].length,
         wrongRaw: match[0],
         rightRaw: `${match[1]}~${match[2]}`
       });
     }
 
-    // 5. ~와 '까지' 중복
-    const waveUntilRegex = /(~[^\n,.;]+?시(?:\s*\d+분)?|\d{1,2}:\d{2})까지/g;
+    // 6. ~와 '까지' 중복 (24시간제 변환과 겹치지 않도록 말미 '까지'만 정밀 타깃팅)
+    const waveUntilRegex = /(~[^\n,.;]+?(?:\d{1,2}시(?:\s*\d{1,2}분)?|\d{1,2}:\d{2}))까지/g;
     while ((match = waveUntilRegex.exec(body)) !== null) {
-      issues.push({
+      const kkaStart = match.index + match[1].length;
+      pushBodyIssue({
         type: "error",
         category: "시간·기간 중복 오류 (p.11)",
         wrong: match[0],
-        right: match[1],
+        right: match[1] + " ('까지' 삭제)",
         reason: "물결표(~)에 이미 '부터~까지' 의미가 담겨 있으므로 뒤에 '까지'를 중복 쓰지 않습니다.",
-        fixTarget: "body",
-        wrongRaw: match[0],
-        rightRaw: match[1]
+        start: kkaStart,
+        end: match.index + match[0].length,
+        wrongRaw: "까지",
+        rightRaw: ""
       });
     }
 
-    // 6. 붙임: 콜론 오용 & 마지막 '끝.' 앞 2칸 공백 검증 (v2.1 신규)
-    if (/붙임\s*:/.test(body)) {
-      const m = body.match(/붙임\s*:\s*/)[0];
-      issues.push({
+    // 7. 천 단위 쉼표 누락 금액 검출 (v3.0 신규)
+    const plainWonRegex = /(^|[^\d,])(\d{4,})원/g;
+    while ((match = plainWonRegex.exec(body)) !== null) {
+      const numStr = match[2];
+      const numStart = match.index + match[1].length;
+      const formatted = `${Number(numStr).toLocaleString("ko-KR")}원`;
+      pushBodyIssue({
+        type: "warn",
+        category: "금액 천 단위 쉼표 표기",
+        wrong: `${numStr}원`,
+        right: formatted,
+        reason: "4자리 이상 금액은 가독성과 오류 방지를 위해 세 자리마다 쉼표(,)를 표기합니다.",
+        start: numStart,
+        end: numStart + numStr.length + 1,
+        wrongRaw: `${numStr}원`,
+        rightRaw: formatted
+      });
+    }
+
+    // 8. 붙임: 콜론 오용 & 마지막 '끝.' 앞 2칸 공백 검증
+    const attachColonRegex = /붙임\s*:\s*/g;
+    while ((match = attachColonRegex.exec(body)) !== null) {
+      pushBodyIssue({
         type: "error",
         category: "붙임 표기 오류 (p.18)",
-        wrong: m.trim(),
+        wrong: match[0].trim(),
         right: "붙임  (콜론 없이 2칸 띄우기)",
         reason: "행정업무운영편람상 '붙임' 뒤에는 콜론(:)을 쓰지 않고 1타(띄어쓰기 2번) 띄어 씁니다.",
-        fixTarget: "body",
-        wrongRaw: m,
+        start: match.index,
+        end: match.index + match[0].length,
+        wrongRaw: match[0],
         rightRaw: "붙임  "
       });
     }
-    const endSingleSpace = /([^\s\n])\s끝\./;
-    if (endSingleSpace.test(body) && !/\s{2}끝\./.test(body)) {
-      const m = body.match(endSingleSpace);
-      issues.push({
+
+    const endSingleSpace = /([^\s\n]) 끝\./g;
+    while ((match = endSingleSpace.exec(body)) !== null) {
+      pushBodyIssue({
         type: "warn",
         category: "문서 종료 '끝.' 띄어쓰기 (p.18)",
-        wrong: m[0],
-        right: `${m[1]}  끝. (2칸 띄움)`,
+        wrong: match[0],
+        right: `${match[1]}  끝. (2칸 띄움)`,
         reason: "본문 또는 붙임의 마지막 글자에서 1글자(띄어쓰기 2번, 1타)를 띄우고 '끝.'을 표기합니다.",
-        fixTarget: "body",
-        wrongRaw: m[0],
-        rightRaw: `${m[1]}  끝.`
+        start: match.index,
+        end: match.index + match[0].length,
+        wrongRaw: match[0],
+        rightRaw: `${match[1]}  끝.`
       });
     }
 
-    // 7. 항목 위계 건너뛰기 검증
+    // 9. 항목 위계 건너뛰기 및 들여쓰기 칸수 검증 (v3.0 보강)
     const lines = body.split("\n");
     let sawLevel1 = false;
     let sawLevel2 = false;
+    let lineOffset = 0;
     lines.forEach((line) => {
       if (/^\s*1\.\s+/.test(line)) {
         sawLevel1 = true;
         sawLevel2 = false;
-      } else if (/^\s*가\.\s+/.test(line)) {
+      } else if (/^가\.\s+/.test(line)) {
         sawLevel2 = true;
-      } else if (/^\s*1\)\s+/.test(line) && sawLevel1 && !sawLevel2) {
-        issues.push({
+        pushBodyIssue({
           type: "warn",
-          category: "항목 기호 위계 오류 (p.11)",
-          wrong: line.trim().slice(0, 18),
-          right: "1. → 가. → 1) 순서 준수",
-          reason: "'1.' 다음에는 반드시 '가.'를 사용한 뒤 하위 항목으로 '1)'을 사용합니다.",
-          fixTarget: "none"
+          category: "항목 들여쓰기 기준 (p.11)",
+          wrong: line.slice(0, 8),
+          right: "  " + line.slice(0, 8) + " (2칸 들여쓰기)",
+          reason: "2단계 항목 '가.'는 왼쪽 기본선에서 2칸(1타, vv) 들여 씁니다.",
+          start: lineOffset,
+          end: lineOffset + 2,
+          wrongRaw: "가.",
+          rightRaw: "  가."
+        });
+      } else if (/^\s+가\.\s+/.test(line)) {
+        sawLevel2 = true;
+      } else if (/^\s*1\)\s+/.test(line)) {
+        if (sawLevel1 && !sawLevel2) {
+          issues.push({
+            type: "warn",
+            category: "항목 기호 위계 오류 (p.11)",
+            wrong: line.trim().slice(0, 18),
+            right: "1. → 가. → 1) 순서 준수",
+            reason: "'1.' 다음에는 반드시 '가.'를 사용한 뒤 하위 항목으로 '1)'을 사용합니다.",
+            fixTarget: "none"
+          });
+        }
+        const leadSpaces = line.match(/^(\s*)1\)/)[1].length;
+        if (leadSpaces < 4) {
+          pushBodyIssue({
+            type: "warn",
+            category: "항목 들여쓰기 기준 (p.11)",
+            wrong: line.slice(0, leadSpaces + 2),
+            right: "    1) (4칸 들여쓰기)",
+            reason: "3단계 항목 '1)'은 왼쪽 기본선에서 4칸(2타) 들여 씁니다.",
+            start: lineOffset,
+            end: lineOffset + leadSpaces + 2,
+            wrongRaw: line.slice(0, leadSpaces + 2),
+            rightRaw: "    1)"
+          });
+        }
+      }
+
+      // 본문 줄 중간 중복 공백 검출 (들여쓰기·'붙임  '·'  끝.' 제외)
+      const trimmedLead = line.length - line.trimStart().length;
+      const inner = line.slice(trimmedLead);
+      const dblSpaceRegex = /([^\s]) {2,}([^\s])/g;
+      let dm;
+      while ((dm = dblSpaceRegex.exec(inner)) !== null) {
+        const beforeChunk = inner.slice(0, dm.index + 1);
+        const afterChunk = inner.slice(dm.index + dm[0].length - 1);
+        if (beforeChunk.endsWith("붙임") || afterChunk.startsWith("끝.")) continue;
+        const absStart = lineOffset + trimmedLead + dm.index;
+        pushBodyIssue({
+          type: "warn",
+          category: "중복 띄어쓰기",
+          wrong: dm[0],
+          right: `${dm[1]} ${dm[2]}`,
+          reason: "문장 내부에 불필요하게 두 칸 이상 띄어쓴 부분이 있습니다.",
+          start: absStart,
+          end: absStart + dm[0].length,
+          wrongRaw: dm[0],
+          rightRaw: `${dm[1]} ${dm[2]}`
         });
       }
+
+      lineOffset += line.length + 1;
     });
 
-    // 8. 문법·띄어쓰기·피동·사동·중복 표현(v2.1 보강)
+    // 10. 내부결재 vs 대외발송 어조 검증 (v3.0 신규)
+    if (docMode === "internal") {
+      const extToneRegex = /(하여\s*주시기\s*바랍니다|해주시기\s*바랍니다)/g;
+      while ((match = extToneRegex.exec(body)) !== null) {
+        pushBodyIssue({
+          type: "warn",
+          category: "내부결재 어조 권장 (p.12)",
+          wrong: match[0],
+          right: "하기 바랍니다",
+          reason: "학교 내부결재 기안문에서는 과도한 높임('~하여 주시기 바랍니다') 대신 간결한 '~하기 바랍니다' 또는 '~하고자 함'을 권장합니다.",
+          start: match.index,
+          end: match.index + match[0].length,
+          wrongRaw: match[0],
+          rightRaw: "하기 바랍니다"
+        });
+      }
+    } else {
+      const intToneRegex = /(하고자\s*함\.|하기\s*바람\.)/g;
+      while ((match = intToneRegex.exec(body)) !== null) {
+        const polite = match[0].includes("하고자") ? "하고자 합니다." : "하여 주시기 바랍니다.";
+        pushBodyIssue({
+          type: "warn",
+          category: "대외발송 어조 권장 (p.12)",
+          wrong: match[0],
+          right: polite,
+          reason: "대외 발송 공문서에서는 명사형 종결('~함', '~바람')보다 정중한 '~합니다 / ~하여 주시기 바랍니다'를 권장합니다.",
+          start: match.index,
+          end: match.index + match[0].length,
+          wrongRaw: match[0],
+          rightRaw: polite
+        });
+      }
+    }
+
+    // 11. 문법·띄어쓰기·피동·사동·중복 표현
     const grammarRules = [
-      { regex: /검토바랍니다/g, right: "검토하여 주시기 바랍니다", cat: "공문서 문장·띄어쓰기 (p.12)", reason: "'검토하여 주시기 바랍니다'(내부결재 시 '검토하기 바랍니다')로 명확히 표현합니다." },
+      { regex: /검토바랍니다/g, right: docMode === "internal" ? "검토하기 바랍니다" : "검토하여 주시기 바랍니다", cat: "공문서 문장·띄어쓰기 (p.12)", reason: "대외발송은 '검토하여 주시기 바랍니다', 내부결재는 '검토하기 바랍니다'로 표현합니다." },
       { regex: /실시코자\s*하오니/g, right: "실시하고자 하오니", cat: "어문규범·투식어", reason: "'~코자' 대신 자연스러운 '~하고자'를 사용합니다." },
       { regex: /(할|될|볼|갈|올)수\s/g, right: "$1 수 ", cat: "의존명사 띄어쓰기 (p.10)", reason: "의존명사 '수'는 앞말과 반드시 띄어 씁니다." },
       { regex: /파악해주시기\s*드립니다/g, right: "파악하여 주시기 바랍니다", cat: "과도한 존칭·문장 호응 (p.12)", reason: "불필요한 '드립니다'를 지양합니다." },
@@ -842,103 +1177,103 @@
 
     grammarRules.forEach((rule) => {
       let m;
+      const nonGlobal = new RegExp(rule.regex.source, rule.regex.flags.replace("g", ""));
       while ((m = rule.regex.exec(body)) !== null) {
-        // 같은 g 정규식으로 replace하면 lastIndex가 0으로 돌아가 무한 반복된다 → g 없는 복사본 사용
-        const replaced = m[0].replace(new RegExp(rule.regex.source, rule.regex.flags.replace("g", "")), rule.right);
-        issues.push({
+        const replaced = m[0].replace(nonGlobal, rule.right);
+        pushBodyIssue({
           type: "error",
           category: rule.cat,
           wrong: m[0].trim(),
           right: replaced.trim(),
           reason: rule.reason,
-          fixTarget: "body",
+          start: m.index,
+          end: m.index + m[0].length,
           wrongRaw: m[0],
           rightRaw: replaced
         });
       }
     });
 
-    // 9. 첨부물 1개일 때 '붙임 1.' 오류
+    // 12. 첨부물 1개일 때 '붙임 1.' 오류
     const attachOneRegex = /붙임\s+1\.\s*([^\n]+?)\s+끝\./;
     if (attachOneRegex.test(body) && !/2\./.test(body.slice(body.indexOf("붙임")))) {
-      const m = body.match(attachOneRegex);
+      const m = attachOneRegex.exec(body);
       const fixedAttach = `붙임  ${m[1].trim()}  끝.`;
-      issues.push({
+      pushBodyIssue({
         type: "warn",
         category: "붙임 표기 원칙 (p.18)",
         wrong: m[0],
         right: fixedAttach,
         reason: "첨부물이 1개일 때는 '1.'을 매기지 않고 '붙임' 뒤 2칸(1타)을 띄운 후 바로 기재합니다.",
-        fixTarget: "body",
+        start: m.index,
+        end: m.index + m[0].length,
         wrongRaw: m[0],
         rightRaw: fixedAttach
       });
     }
 
-    // 10. 순화어 사전 매칭
+    // 13. 순화어 사전 매칭 (모든 발생 위치 오프셋 기록)
     window.EDU_DATA.purifiedTerms.forEach((item) => {
       if (item.wrong === "귀교" || item.wrong === "귀사") return;
-      if (body.includes(item.wrong)) {
-        const cleanRight = item.right.split("/")[0].split("(")[0].trim();
-        issues.push({
+      let from = 0;
+      const cleanRight = item.right.split("/")[0].split("(")[0].trim();
+      while (from < body.length) {
+        const pos = body.indexOf(item.wrong, from);
+        if (pos === -1) break;
+        pushBodyIssue({
           type: item.category.includes("오류") ? "error" : "warn",
           category: item.category,
           wrong: item.wrong,
           right: item.right,
           reason: item.reason,
-          fixTarget: "body",
+          start: pos,
+          end: pos + item.wrong.length,
           wrongRaw: item.wrong,
           rightRaw: cleanRight
         });
+        from = pos + item.wrong.length;
       }
     });
 
-    lastLintFixes = issues;
-    renderLintIssues(issues);
-    renderLintInlinePreviewSafe(title, body, issues);
+    // 겹치는 본문 구간 정리 (더 길거나 앞선 오류 우선) → 제목·비수정 항목과 합치기
+    const nonBodyIssues = issues.filter((i) => i.fixTarget !== "body");
+    const bodyIssues = issues
+      .filter((i) => i.fixTarget === "body")
+      .sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
+    const dedupBody = [];
+    let lastEnd = -1;
+    for (const iss of bodyIssues) {
+      if (iss.start >= lastEnd) {
+        dedupBody.push(iss);
+        lastEnd = iss.end;
+      }
+    }
+
+    const finalIssues = [...nonBodyIssues, ...dedupBody];
+    lastLintFixes = finalIssues;
+    renderLintIssues(finalIssues);
+    renderLintInlinePreviewSafe(title, body, finalIssues);
   }
 
-  // P0-2 해결: 원문 오프셋 기반 단일 패스 비중첩 하이라이트 렌더러 (HTML 속성 오염 원천 차단)
+  // 오프셋 기반 단일 패스 비중첩 하이라이트 (개별 클릭 시 정확한 해당 오프셋 교정)
   function renderLintInlinePreviewSafe(title, body, issues) {
     const box = document.getElementById("lintInlinePreview");
     if (!box) return;
 
-    const spans = [];
-    issues.forEach((iss, idx) => {
-      if (iss.fixTarget !== "body" || !iss.wrongRaw) return;
-      let from = 0;
-      while (from < body.length) {
-        const pos = body.indexOf(iss.wrongRaw, from);
-        if (pos === -1) break;
-        spans.push({
-          start: pos,
-          end: pos + iss.wrongRaw.length,
-          idx,
-          type: iss.type,
-          tip: `${iss.right} (${iss.category})`
-        });
-        from = pos + iss.wrongRaw.length;
-      }
-    });
-
-    // 시작 위치 오름차순, 같으면 긴 매치 우선 → 겹치는 구간 제거
-    spans.sort((a, b) => a.start - b.start || b.end - a.end);
-    const merged = [];
-    let cursorEnd = 0;
-    for (const sp of spans) {
-      if (sp.start >= cursorEnd) {
-        merged.push(sp);
-        cursorEnd = sp.end;
-      }
-    }
+    const spans = issues
+      .map((iss, idx) => ({ iss, idx }))
+      .filter(({ iss }) => iss.fixTarget === "body" && typeof iss.start === "number")
+      .sort((a, b) => a.iss.start - b.iss.start);
 
     let htmlOut = "";
     let pos = 0;
-    for (const sp of merged) {
-      if (sp.start > pos) htmlOut += escapeHtml(body.slice(pos, sp.start));
-      const cls = sp.type === "warn" ? "lint-mark-warn" : "lint-mark-error";
-      htmlOut += `<span class="${cls}" title="${escapeHtml(sp.tip)}" onclick="window.applySingleLintFix(${sp.idx})">${escapeHtml(body.slice(sp.start, sp.end))}</span>`;
-      pos = sp.end;
+    for (const { iss, idx } of spans) {
+      if (iss.start < pos) continue;
+      if (iss.start > pos) htmlOut += escapeHtml(body.slice(pos, iss.start));
+      const cls = iss.type === "warn" ? "lint-mark-warn" : "lint-mark-error";
+      const tip = `${iss.right} (${iss.category})`;
+      htmlOut += `<span class="${cls}" title="${escapeHtml(tip)}" onclick="window.applySingleLintFix(${idx})">${escapeHtml(body.slice(iss.start, iss.end))}</span>`;
+      pos = iss.end;
     }
     if (pos < body.length) htmlOut += escapeHtml(body.slice(pos));
 
@@ -951,7 +1286,7 @@
     if (issues.length === 0) {
       badge.className = "badge badge-green";
       badge.textContent = "표기 · 어문규범 완벽 (0건)";
-      container.innerHTML = `<div class="callout callout-success" style="text-align:center; padding:1.75rem 1rem;"><div style="font-weight:800; color:var(--success); font-size:1rem;">검출된 공문서 표기 및 공공언어 오류가 없습니다!</div><div class="text-sm text-secondary mt-1">행정업무운영편람의 날짜·시간·항목·붙임 표기 원칙을 잘 준수하고 있습니다.</div></div>`;
+      container.innerHTML = `<div class="callout callout-success" style="text-align:center; padding:1.75rem 1rem;"><div style="font-weight:800; color:var(--success); font-size:1rem;">검출된 공문서 표기 및 공공언어 오류가 없습니다!</div><div class="text-sm text-secondary mt-1">행정업무운영편람의 날짜·24시간제·항목·붙임 표기 원칙을 잘 준수하고 있습니다.</div></div>`;
       return;
     }
 
@@ -980,9 +1315,10 @@
     if (iss.fixTarget === "title" && iss.applyFix) {
       const titleEl = document.getElementById("lintTitleInput");
       titleEl.value = iss.applyFix(titleEl.value);
-    } else if (iss.fixTarget === "body" && iss.wrongRaw) {
+    } else if (iss.fixTarget === "body" && typeof iss.start === "number") {
       const bodyEl = document.getElementById("lintBodyInput");
-      bodyEl.value = bodyEl.value.replace(iss.wrongRaw, iss.rightRaw);
+      const val = bodyEl.value;
+      bodyEl.value = val.slice(0, iss.start) + iss.rightRaw + val.slice(iss.end);
     }
     runDocumentLinter();
   };
@@ -993,10 +1329,18 @@
     pushLintUndo();
     let titleVal = document.getElementById("lintTitleInput").value;
     let bodyVal = document.getElementById("lintBodyInput").value;
-    fixable.forEach((iss) => {
-      if (iss.fixTarget === "title" && iss.applyFix) titleVal = iss.applyFix(titleVal);
-      else if (iss.fixTarget === "body" && iss.wrongRaw) bodyVal = bodyVal.split(iss.wrongRaw).join(iss.rightRaw);
-    });
+    fixable
+      .filter((i) => i.fixTarget === "title" && i.applyFix)
+      .forEach((iss) => {
+        titleVal = iss.applyFix(titleVal);
+      });
+    // 본문 오류는 뒤쪽 오프셋부터 역순 치환 → 인덱스 어긋남 0%
+    fixable
+      .filter((i) => i.fixTarget === "body" && typeof i.start === "number")
+      .sort((a, b) => b.start - a.start)
+      .forEach((iss) => {
+        bodyVal = bodyVal.slice(0, iss.start) + iss.rightRaw + bodyVal.slice(iss.end);
+      });
     document.getElementById("lintTitleInput").value = titleVal;
     document.getElementById("lintBodyInput").value = bodyVal;
     runDocumentLinter();
@@ -1133,53 +1477,37 @@
     wrap.innerHTML = builderTableRows
       .map(
         (r) => `
-      <div style="display:grid; grid-template-columns: 110px 1fr 90px 34px; gap:0.35rem;">
-        <input type="text" class="form-input" style="padding:0.4rem 0.55rem; font-size:0.82rem;" value="${escapeHtml(r.time)}" placeholder="시간" oninput="window.updateBuilderTableCell(${r.id}, 'time', this.value)" />
-        <input type="text" class="form-input" style="padding:0.4rem 0.55rem; font-size:0.82rem;" value="${escapeHtml(r.content)}" placeholder="세부 내용" oninput="window.updateBuilderTableCell(${r.id}, 'content', this.value)" />
-        <input type="text" class="form-input" style="padding:0.4rem 0.55rem; font-size:0.82rem;" value="${escapeHtml(r.owner)}" placeholder="담당" oninput="window.updateBuilderTableCell(${r.id}, 'owner', this.value)" />
-        <button type="button" class="btn btn-sm btn-secondary" onclick="window.removeBuilderTableRow(${r.id})">✕</button>
+      <div class="builder-table-row">
+        <input type="text" class="form-input btr-time" style="padding:0.4rem 0.55rem; font-size:0.82rem;" value="${escapeHtml(r.time)}" placeholder="시간" oninput="window.updateBuilderTableCell(${r.id}, 'time', this.value)" />
+        <input type="text" class="form-input btr-content" style="padding:0.4rem 0.55rem; font-size:0.82rem;" value="${escapeHtml(r.content)}" placeholder="세부 내용" oninput="window.updateBuilderTableCell(${r.id}, 'content', this.value)" />
+        <input type="text" class="form-input btr-owner" style="padding:0.4rem 0.55rem; font-size:0.82rem;" value="${escapeHtml(r.owner)}" placeholder="담당" oninput="window.updateBuilderTableCell(${r.id}, 'owner', this.value)" />
+        <button type="button" class="btn btn-sm btn-secondary btr-del" onclick="window.removeBuilderTableRow(${r.id})" aria-label="행 삭제">✕</button>
       </div>
     `
       )
       .join("");
   }
 
-  window.loadBuilderPreset = function (preset) {
-    if (preset === "fieldtrip") {
-      document.getElementById("bDocType").value = "내부결재";
-      document.getElementById("bRelatedDoc").value = "○○초등학교-4808(2026. 5. 8.)";
-      document.getElementById("bTitle").value = "2026학년도 1학기 현장체험학습 사전답사 실시 계획";
-      document.getElementById("bPurpose").value = "2026학년도 현장체험학습 매뉴얼에 의거하여 안전하고 교육적인 체험학습 운영을 위해 다음과 같이 사전답사를 실시하고자 합니다.";
-      document.getElementById("bDate").value = "2026. 5. 20.(수) 14:00~17:00";
-      document.getElementById("bPlace").value = "국립광주과학관 및 이동 경로 일원";
-      document.getElementById("bTarget").value = "3학년 부장 및 인솔교사 3명 (총 4명)";
-      document.getElementById("bDetails").value = "체험 활동 장소의 교육적 적합성 및 안전 시설 확인\n학생 이동 동선, 식당 위생 상태, 비상 대피로 및 보건실 위치 점검\n차량 승·하차 구역 및 주차장 확보 상태 확인";
-      document.getElementById("bPlanB").value = "우천 또는 미세먼지 '나쁨' 시 실내 상설전시관 및 천체투영관 관람 프로그램으로 대체 운영";
-      document.getElementById("bBudget").value = "관외출장 여비 및 입장료(교육운영비·여비): 20,000원 × 4명 × 1회 = 80,000원";
-      document.getElementById("bAttachments").value = "사전답사 계획 1부.\n사전답사 체크리스트 1부.";
-      builderTableRows = clone(defaultBuilderTableRows);
-    } else if (preset === "eco") {
-      document.getElementById("bDocType").value = "내부결재";
-      document.getElementById("bRelatedDoc").value = "창의융합교육과-3120(2026. 4. 2.)";
-      document.getElementById("bTitle").value = "2026학년도 학교 생태환경교육 자율동아리 5월 활동 계획";
-      document.getElementById("bPurpose").value = "학생 주도적 생태환경 보호 실천과 협동심 함양을 위하여 자율동아리 5월 활동(우리 동네 플로깅)을 다음과 같이 운영하고자 합니다.";
-      document.getElementById("bDate").value = "2026. 5. 22.(금) 13:30~15:50";
-      document.getElementById("bPlace").value = "학교 주변 생태탐방로 및 인근 하천 일대";
-      document.getElementById("bTarget").value = "생태환경 자율동아리 회원 16명 및 지도교사 2명";
-      document.getElementById("bDetails").value = "사전 안전교육(교통안전·독충 주의·집게 사용법)\n생태 플로깅 및 교내·인근 식생 관찰\n수거 쓰레기 분리배출 및 활동 소감 나눔";
-      document.getElementById("bPlanB").value = "우천 및 폭염 특보 시 과학실 내 '업사이클링 친환경 화분 만들기' 활동으로 대체(Plan B)";
-      document.getElementById("bBudget").value = "생태 플로깅 물품 및 간식 구입(교육운영비): 10,000원 × 16명 × 1회 = 160,000원";
-      document.getElementById("bAttachments").value = "2026학년도 생태환경 자율동아리 5월 운영 계획서 1부.";
-      builderTableRows = [
-        { id: 1, time: "13:30~13:50", content: "사전 안전교육 및 활동 도구 배부", owner: "지도교사" },
-        { id: 2, time: "13:50~15:20", content: "인근 산책로 플로깅 및 식생 관찰", owner: "동아리 전원" },
-        { id: 3, time: "15:20~15:50", content: "분리배출 및 성찰 소감 나눔", owner: "" }
-      ];
-    }
+  window.loadBuilderPreset = function (presetKey) {
+    const p = window.EDU_DATA.builderPresets && window.EDU_DATA.builderPresets[presetKey];
+    if (!p) return;
+    document.getElementById("bDocType").value = p.docType;
+    document.getElementById("bRelatedDoc").value = p.related;
+    document.getElementById("bTitle").value = p.title;
+    document.getElementById("bPurpose").value = p.purpose;
+    document.getElementById("bDate").value = p.date;
+    document.getElementById("bPlace").value = p.place;
+    document.getElementById("bTarget").value = p.target;
+    document.getElementById("bDetails").value = p.details;
+    document.getElementById("bPlanB").value = p.planB;
+    document.getElementById("bBudget").value = p.budget;
+    document.getElementById("bAttachments").value = p.attachments;
+    document.getElementById("bIncludeTable").checked = Boolean(p.includeTable);
+    builderTableRows = clone(p.tableRows || defaultBuilderTableRows);
     captureBuilderDraft();
     renderBuilderTableEditor();
     renderBuilderPreview();
-    window.showToast("예시 기안문이 로드되었습니다.");
+    window.showToast(`'${p.label}' 기안문 프리셋이 로드되었습니다.`);
   };
 
   function buildDocModel() {
@@ -1203,16 +1531,23 @@
       mainNum++;
     }
     bodyLines.push(`${mainNum}. ${purpose}`);
-    bodyLines.push(`  가. 일시: ${date}`);
-    bodyLines.push(`  나. 장소: ${place}`);
-    bodyLines.push(`  다. 대상: ${target}`);
+
+    // 빈 항목을 건너뛰어도 가·나·다·라... 순서를 자동으로 유지 (P0 버그 해결)
+    const hangulOrder = ["가", "나", "다", "라", "마", "바", "사", "아", "자", "차"];
+    let subIdx = 0;
+    const pushSub = (text) => {
+      bodyLines.push(`  ${hangulOrder[subIdx++]}. ${text}`);
+    };
+    if (date) pushSub(`일시: ${date}`);
+    if (place) pushSub(`장소: ${place}`);
+    if (target) pushSub(`대상: ${target}`);
     if (details.length > 0) {
-      bodyLines.push(`  라. 세부 추진 내용`);
+      pushSub("세부 추진 내용");
       details.forEach((d, i) => bodyLines.push(`    ${i + 1}) ${d}`));
     }
-    if (planB) bodyLines.push(`  마. 안전 대책 및 악천후 시 대안: ${planB}`);
-    if (budget) bodyLines.push(`  바. 소요 예산: ${budget}`);
-    if (includeTable) bodyLines.push(`  사. 세부 일정표`);
+    if (planB) pushSub(`안전 대책 및 악천후 시 대안: ${planB}`);
+    if (budget) pushSub(`소요 예산: ${budget}`);
+    if (includeTable) pushSub("세부 일정표");
 
     const tableRowsFormatted = builderTableRows.map((r, rIdx) => {
       const isLast = rIdx === builderTableRows.length - 1;
@@ -1245,6 +1580,20 @@
 
     return { docType, title, bodyLines, includeTable, tableRowsFormatted, attachLines };
   }
+
+  window.sendBuilderToLinter = function () {
+    const m = buildDocModel();
+    const fullBody = m.attachLines.length ? `${m.bodyLines.join("\n")}\n\n${m.attachLines.join("\n")}` : m.bodyLines.join("\n");
+    document.getElementById("lintTitleInput").value = m.title;
+    document.getElementById("lintBodyInput").value = fullBody;
+    const modeSel = document.getElementById("lintDocModeSelect");
+    if (modeSel) modeSel.value = m.docType === "내부결재" ? "internal" : "external";
+    lintUndoStack = [];
+    updateUndoBtn();
+    window.switchMainTab("tab-doc", "doc-sub-linter");
+    runDocumentLinter();
+    window.showToast("기안문 초안을 린터로 불러와 최종 어문규범 점검을 실행했습니다.");
+  };
 
   function renderBuilderPreview() {
     const m = buildDocModel();
@@ -1354,16 +1703,17 @@
     renderPreBudgetTable();
     renderPumuiCsvTable();
 
-    // 개산급 정산서 복원
+    // 개산급 정산서 복원 (담임교사명 저장 포함)
     document.getElementById("settleReceived").value = appState.settlement.received;
     document.getElementById("settleEndDate").value = appState.settlement.endDate;
-    document.getElementById("settleTeacher").value = appState.profile.teacherName;
+    document.getElementById("settleTeacher").value = appState.settlement.teacher || appState.profile.teacherName;
     document.getElementById("settleClassName").value = appState.settlement.className;
 
     ["settleReceived", "settleEndDate", "settleTeacher", "settleClassName"].forEach((id) => {
       document.getElementById(id).addEventListener("input", () => {
         appState.settlement.received = parseInt(document.getElementById("settleReceived").value, 10) || 0;
         appState.settlement.endDate = document.getElementById("settleEndDate").value;
+        appState.settlement.teacher = document.getElementById("settleTeacher").value;
         appState.settlement.className = document.getElementById("settleClassName").value;
         saveState();
         updateSettlementSummaryOnly();
@@ -1371,6 +1721,26 @@
     });
     renderSettlementTable();
     renderRecallSimulator();
+    renderSettleSimulator();
+
+    // v3.0 신규: 공무원 국내 출장 여비 계산기 & 물품·용역·공사 계약 판별기 초기화
+    ["travelScopeSelect", "travelPeople", "travelInHours", "travelInCar", "travelDays", "travelNights", "travelRegion", "travelFare", "travelOutCar"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", calculateTravelAllowance);
+        el.addEventListener("change", calculateTravelAllowance);
+      }
+    });
+    calculateTravelAllowance();
+
+    ["contractTypeSelect", "contractVatMode", "contractAmountInput", "contractPreferredCheck"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", evaluateContractMethod);
+        el.addEventListener("change", evaluateContractMethod);
+      }
+    });
+    evaluateContractMethod();
 
     ["classOpClasses", "classOpStudents"].forEach((id) => document.getElementById(id).addEventListener("input", calculateClassOperation));
     ["promoPeople", "promoTotal"].forEach((id) => document.getElementById(id).addEventListener("input", calculatePromoLimit));
@@ -1519,6 +1889,27 @@
     window.showToast("성립전 예산 세출표에 강사수당이 추가되었습니다.");
   };
 
+  window.sendInstructorToBuilder = function () {
+    const d = getInstructorCalcData();
+    const budgetText = `강사수당(운영수당·${d.rateObj.name.split("(")[0].trim()}): 금${formatNumber(d.total)}원(금${numberToKoreanWords(d.total)}원) [${d.formula}]`;
+    document.getElementById("bBudget").value = budgetText;
+    captureBuilderDraft();
+    renderBuilderPreview();
+    window.switchMainTab("tab-doc", "doc-sub-builder");
+    window.showToast("강사수당 산출식이 기안문 빌더의 소요 예산란에 반영되었습니다.");
+  };
+
+  window.sendPreBudgetToBuilder = function () {
+    const name = document.getElementById("preProjectName").value.trim() || "교육활동 사업";
+    const totalExp = (appState.preBudgetDraft.rows || []).reduce((acc, r) => acc + (Number(r.amount) || 0), 0);
+    const budgetText = `${name} 소요 예산(성립전): 금${formatNumber(totalExp)}원(금${numberToKoreanWords(totalExp)}원)`;
+    document.getElementById("bBudget").value = budgetText;
+    captureBuilderDraft();
+    renderBuilderPreview();
+    window.switchMainTab("tab-doc", "doc-sub-builder");
+    window.showToast("성립전 예산 합계가 기안문 빌더의 소요 예산란에 반영되었습니다.");
+  };
+
   window.loadSamplePreBudget = function () {
     appState.preBudgetDraft = {
       projectName: "2026년 공생의 길(물길, 숲길) 프로젝트 운영",
@@ -1625,13 +2016,13 @@
       .map(
         (item) => `
       <tr>
-        <td><input type="text" class="form-input" style="padding:0.4rem 0.55rem;" value="${escapeHtml(item.name)}" placeholder="품명" oninput="window.updatePumuiCell(${item.id}, 'name', this.value)" /></td>
-        <td><input type="text" class="form-input" style="padding:0.4rem 0.55rem;" value="${escapeHtml(item.spec)}" placeholder="규격" oninput="window.updatePumuiCell(${item.id}, 'spec', this.value)" /></td>
-        <td style="width:85px;"><input type="text" class="form-input" style="padding:0.4rem 0.55rem;" value="${escapeHtml(item.unit)}" oninput="window.updatePumuiCell(${item.id}, 'unit', this.value)" /></td>
-        <td style="width:90px;"><input type="number" class="form-input" style="padding:0.4rem 0.55rem;" value="${item.qty}" min="1" oninput="window.updatePumuiCell(${item.id}, 'qty', this.value)" /></td>
-        <td style="width:120px;"><input type="number" class="form-input" style="padding:0.4rem 0.55rem;" value="${item.price}" step="100" oninput="window.updatePumuiCell(${item.id}, 'price', this.value)" /></td>
-        <td id="pumui-sub-${item.id}" style="font-weight:700; text-align:right; white-space:nowrap;">${formatNumber(item.qty * item.price)}원</td>
-        <td><button type="button" class="btn btn-sm btn-secondary" onclick="window.removePumuiItemRow(${item.id})">✕</button></td>
+        <td data-label="품명"><input type="text" class="form-input" style="padding:0.4rem 0.55rem;" value="${escapeHtml(item.name)}" placeholder="품명" oninput="window.updatePumuiCell(${item.id}, 'name', this.value)" /></td>
+        <td data-label="규격"><input type="text" class="form-input" style="padding:0.4rem 0.55rem;" value="${escapeHtml(item.spec)}" placeholder="규격" oninput="window.updatePumuiCell(${item.id}, 'spec', this.value)" /></td>
+        <td data-label="단위" style="width:85px;"><input type="text" class="form-input" style="padding:0.4rem 0.55rem;" value="${escapeHtml(item.unit)}" oninput="window.updatePumuiCell(${item.id}, 'unit', this.value)" /></td>
+        <td data-label="수량" style="width:90px;"><input type="number" class="form-input" style="padding:0.4rem 0.55rem;" value="${item.qty}" min="1" oninput="window.updatePumuiCell(${item.id}, 'qty', this.value)" /></td>
+        <td data-label="예상단가(원)" style="width:120px;"><input type="number" class="form-input" style="padding:0.4rem 0.55rem;" value="${item.price}" step="100" oninput="window.updatePumuiCell(${item.id}, 'price', this.value)" /></td>
+        <td data-label="예상금액(원)" id="pumui-sub-${item.id}" style="font-weight:700; text-align:right; white-space:nowrap;">${formatNumber(item.qty * item.price)}원</td>
+        <td data-label="삭제"><button type="button" class="btn btn-sm btn-secondary" onclick="window.removePumuiItemRow(${item.id})">✕</button></td>
       </tr>
     `
       )
@@ -1714,18 +2105,18 @@
       .map(
         (r) => `
       <tr>
-        <td style="width:140px;"><input type="date" class="form-input" style="padding:0.38rem 0.5rem;" value="${escapeHtml(r.date)}" oninput="window.updateSettlementCell(${r.id}, 'date', this.value)" /></td>
-        <td><input type="text" class="form-input" style="padding:0.38rem 0.5rem;" value="${escapeHtml(r.vendor)}" placeholder="사용업체명" oninput="window.updateSettlementCell(${r.id}, 'vendor', this.value)" /></td>
-        <td style="width:125px;">
+        <td data-label="사용일자" style="width:140px;"><input type="date" class="form-input" style="padding:0.38rem 0.5rem;" value="${escapeHtml(r.date)}" oninput="window.updateSettlementCell(${r.id}, 'date', this.value)" /></td>
+        <td data-label="사용업체명"><input type="text" class="form-input" style="padding:0.38rem 0.5rem;" value="${escapeHtml(r.vendor)}" placeholder="사용업체명" oninput="window.updateSettlementCell(${r.id}, 'vendor', this.value)" /></td>
+        <td data-label="증빙구분" style="width:125px;">
           <select class="form-select" style="padding:0.38rem 0.5rem;" onchange="window.updateSettlementCell(${r.id}, 'proof', this.value)">
             <option value="전산자료" ${r.proof === "전산자료" ? "selected" : ""}>전산자료(카드)</option>
             <option value="현금영수증" ${r.proof === "현금영수증" ? "selected" : ""}>현금영수증</option>
             <option value="간이영수증" ${r.proof === "간이영수증" ? "selected" : ""}>기타 영수증</option>
           </select>
         </td>
-        <td><input type="text" class="form-input" style="padding:0.38rem 0.5rem;" value="${escapeHtml(r.desc)}" placeholder="사용내역" oninput="window.updateSettlementCell(${r.id}, 'desc', this.value)" /></td>
-        <td style="width:125px;"><input type="number" class="form-input" style="padding:0.38rem 0.5rem; text-align:right;" value="${r.amount}" step="100" oninput="window.updateSettlementCell(${r.id}, 'amount', this.value)" /></td>
-        <td class="no-print"><button type="button" class="btn btn-sm btn-secondary" onclick="window.removeSettlementRow(${r.id})">✕</button></td>
+        <td data-label="사용내역"><input type="text" class="form-input" style="padding:0.38rem 0.5rem;" value="${escapeHtml(r.desc)}" placeholder="사용내역" oninput="window.updateSettlementCell(${r.id}, 'desc', this.value)" /></td>
+        <td data-label="사용금액(원)" style="width:125px;"><input type="number" class="form-input" style="padding:0.38rem 0.5rem; text-align:right;" value="${r.amount}" step="100" oninput="window.updateSettlementCell(${r.id}, 'amount', this.value)" /></td>
+        <td data-label="삭제" class="no-print"><button type="button" class="btn btn-sm btn-secondary" onclick="window.removeSettlementRow(${r.id})">✕</button></td>
       </tr>
     `
       )
@@ -1783,7 +2174,289 @@
     window.showToast("개산급 정산내역 CSV 파일이 다운로드되었습니다.");
   };
 
-  // P1-4: K-에듀파인 지출품의 회수 · 연계반송 클릭형 모의 체험 시뮬레이터
+  // v3.0 신규: 공무원 국내 출장 여비 자동 계산기
+  function getTravelCalcData() {
+    const r = window.EDU_DATA.travelRules;
+    const scope = document.getElementById("travelScopeSelect")?.value || "in";
+    const people = Math.max(1, parseInt(document.getElementById("travelPeople")?.value, 10) || 1);
+
+    if (scope === "in") {
+      const hours = document.getElementById("travelInHours")?.value || "over4";
+      const car = document.getElementById("travelInCar")?.value === "yes";
+      const base = hours === "under4" ? r.inRegionUnder4h : r.inRegionOver4h;
+      const perPerson = Math.max(0, base - (car ? r.inRegionOfficialCarDeduct : 0));
+      const total = perPerson * people;
+      const label = hours === "under4" ? "관내 4시간 미만" : "관내 4시간 이상";
+      const formula = `관내출장 여비(${label}${car ? "·공용차량 감액" : ""}): ${formatNumber(perPerson)}원×${people}명=${formatNumber(total)}원`;
+      const breakdown = `1인당 ${formatNumber(base)}원${car ? ` - 공용차량 감액 ${formatNumber(r.inRegionOfficialCarDeduct)}원` : ""} = ${formatNumber(perPerson)}원`;
+      return { scope, people, perPerson, total, formula, breakdown, note: "근무지 내 출장은 영수증 정산 없이 정액 지급(공용차량 이용 시 1만 원 감액)." };
+    }
+
+    const days = Math.max(1, parseInt(document.getElementById("travelDays")?.value, 10) || 1);
+    const nights = Math.max(0, Math.min(days - 1, parseInt(document.getElementById("travelNights")?.value, 10) || 0));
+    const regionKey = document.getElementById("travelRegion")?.value || "other";
+    const regionInfo = r.lodgingCaps[regionKey] || r.lodgingCaps.other;
+    const fare = Math.max(0, parseInt(document.getElementById("travelFare")?.value, 10) || 0);
+    const car = document.getElementById("travelOutCar")?.value === "yes";
+
+    const dailyRate = car ? Math.round(r.outDailyAllowance / 2) : r.outDailyAllowance;
+    const dailyTotal = dailyRate * days;
+    const mealTotal = r.outMealAllowance * days;
+    const lodgingMax = regionInfo.cap * nights;
+    const perPerson = dailyTotal + mealTotal + lodgingMax + fare;
+    const total = perPerson * people;
+    const parts = [`일비 ${formatNumber(dailyTotal)}원`, `식비 ${formatNumber(mealTotal)}원`];
+    if (nights > 0) parts.push(`숙박비 상한 ${formatNumber(lodgingMax)}원(${regionInfo.label} ${nights}박)`);
+    if (fare > 0) parts.push(`운임 ${formatNumber(fare)}원`);
+    const formula = `관외출장 여비(${days}일${nights > 0 ? ` ${nights}박` : ""}): ${formatNumber(perPerson)}원×${people}명=${formatNumber(total)}원`;
+    return {
+      scope,
+      people,
+      perPerson,
+      total,
+      formula,
+      breakdown: `1인 기준: ${parts.join(" + ")} = ${formatNumber(perPerson)}원`,
+      note: "관외출장 운임·숙박비는 영수증 실비 정산(출장 종료 다음 날부터 1주일 이내 K-에듀파인 여비정산서 제출)."
+    };
+  }
+
+  function calculateTravelAllowance() {
+    const scope = document.getElementById("travelScopeSelect")?.value || "in";
+    const inBox = document.getElementById("travelInOptions");
+    const outBox = document.getElementById("travelOutOptions");
+    if (inBox) inBox.style.display = scope === "in" ? "grid" : "none";
+    if (outBox) outBox.style.display = scope === "out" ? "block" : "none";
+
+    const box = document.getElementById("travelResultBox");
+    if (!box) return;
+    const d = getTravelCalcData();
+    box.innerHTML = `
+      <div class="text-xs text-secondary mb-1">${escapeHtml(d.breakdown)}</div>
+      <div style="font-size:1.22rem; font-weight:800; color:var(--brand-primary); margin-bottom:0.35rem;">총 출장 여비: ${formatNumber(d.total)}원 <span class="badge badge-blue">여비 (B10-01)</span></div>
+      <div class="font-mono text-xs mb-1" style="background:var(--bg-secondary); padding:0.4rem 0.6rem; border-radius:6px; border:1px solid var(--border-color);">에듀파인 산출식: <strong>${escapeHtml(d.formula)}</strong></div>
+      <div class="text-xs text-muted">${escapeHtml(d.note)}</div>
+    `;
+  }
+
+  window.copyTravelFormula = function () {
+    const d = getTravelCalcData();
+    window.copyText(d.formula, `출장 여비 산출식(${d.formula})이 복사되었습니다.`);
+  };
+
+  window.sendTravelToBuilder = function () {
+    const d = getTravelCalcData();
+    document.getElementById("bBudget").value = `${d.formula} (여비·금${formatNumber(d.total)}원(금${numberToKoreanWords(d.total)}원))`;
+    captureBuilderDraft();
+    renderBuilderPreview();
+    window.switchMainTab("tab-doc", "doc-sub-builder");
+    window.showToast("출장 여비 산출식이 기안문 빌더의 소요 예산란에 반영되었습니다.");
+  };
+
+  // v3.0 신규: 물품·용역·공사 계약 방법(수의/S2B/G2B) 판별기
+  function evaluateContractMethod() {
+    const box = document.getElementById("contractResultBox");
+    if (!box) return;
+    const type = document.getElementById("contractTypeSelect")?.value || "goods";
+    const vatMode = document.getElementById("contractVatMode")?.value || "incl";
+    const raw = Math.max(0, parseInt(document.getElementById("contractAmountInput")?.value, 10) || 0);
+    const isPref = Boolean(document.getElementById("contractPreferredCheck")?.checked);
+
+    const estPrice = vatMode === "incl" ? Math.round(raw / 1.1) : raw;
+    const totalVatIncl = vatMode === "incl" ? raw : Math.round(raw * 1.1);
+
+    const isGoodsOrService = type === "goods" || type === "service";
+    const oneQuoteLimit = isGoodsOrService && isPref ? 50000000 : 20000000;
+    const twoQuoteLimit =
+      type === "constGeneral" ? 400000000 : type === "constSpecial" ? 200000000 : type === "constOther" ? 160000000 : 100000000;
+
+    let methodTitle = "";
+    let badgeCls = "badge-green";
+    let methodDesc = "";
+    let docs = [];
+
+    if (estPrice <= 0) {
+      box.innerHTML = `<div class="surface-box text-sm text-muted">예상 계약 금액(원)을 입력하면 적용 계약 방법과 필수 서류가 자동 판별됩니다.</div>`;
+      return;
+    } else if (estPrice <= oneQuoteLimit) {
+      methodTitle = "1인 견적 수의계약 가능";
+      badgeCls = "badge-green";
+      methodDesc =
+        estPrice > 10000000 && isGoodsOrService
+          ? `법령상 1인 수의계약(추정가격 ${formatNumber(oneQuoteLimit)}원 이하) 대상이나, 1천만 원 초과 시 학교·교육청 자체 기준에 따라 2인 이상 견적 비교 또는 S2B(학교장터) 이용을 적극 권장합니다.`
+          : `추정가격 ${formatNumber(oneQuoteLimit)}원 이하로 1인 견적 수의계약이 가능합니다. (행정실 사전 품의 및 시장조사 권장)`;
+      docs = ["지출품의서 (사전 결재)", "견적서 (1인 이상)", "사업자등록증 · 통장사본", "승낙사항 (또는 계약서)", "검사·검수조서", "청렴서약서 (필요 시)"];
+    } else if (estPrice <= twoQuoteLimit) {
+      methodTitle = "지정정보처리장치(S2B·G2B) 2인 이상 견적 소액수의";
+      badgeCls = "badge-amber";
+      methodDesc = `추정가격 ${formatNumber(oneQuoteLimit)}원 초과 ~ ${formatNumber(twoQuoteLimit)}원 이하 구간입니다. 나라장터(G2B) 또는 학교장터(S2B)를 통해 2인 이상 견적서 제출 공고를 진행해야 합니다.`;
+      docs = ["지출품의서 및 과업지시서/규격서", "산출기초조사서 (시장조사)", "S2B/G2B 2인 이상 견적 공고", "표준계약서 · 계약보증금", "청렴서약서 · 수의계약 각서", "검사·검수조서 및 완료계"];
+    } else {
+      methodTitle = "일반 · 제한경쟁입찰 (G2B 나라장터)";
+      badgeCls = "badge-red";
+      methodDesc = `추정가격 ${formatNumber(twoQuoteLimit)}원 초과 구간으로 경쟁입찰 대상입니다. 행정실과 사전 협의하여 입찰 공고 기간(최소 7~10일)과 규격서·예정가격 산정을 충분히 준비하세요.`;
+      docs = ["사전 규격 공개 · 입찰 공고안", "산출기초조사서 · 예정가격 조서", "과업지시서 / 시방서 / 설계도서", "나라장터(G2B) 입찰·개찰", "계약서 · 계약이행보증증권", "준공검사조서 · 하자보증서(공사)"];
+    }
+    if (!isGoodsOrService && !docs.some((d) => d.includes("하자"))) {
+      docs.push("하자보수보증금/각서 (공사)");
+    }
+
+    box.innerHTML = `
+      <div class="callout ${badgeCls === "badge-green" ? "callout-success" : badgeCls === "badge-amber" ? "callout-warn" : "callout-danger"}">
+        <div class="row-between mb-1">
+          <span class="badge ${badgeCls}">${escapeHtml(methodTitle)}</span>
+          <span class="text-xs text-secondary">추정가격(VAT 제외): <strong>${formatNumber(estPrice)}원</strong></span>
+        </div>
+        <div class="text-xs text-secondary mb-1">부가세 포함 추정금액: <strong>금${formatNumber(totalVatIncl)}원(금${numberToKoreanWords(totalVatIncl)}원)</strong></div>
+        <div class="text-sm">${escapeHtml(methodDesc)}</div>
+      </div>
+      <div class="surface-box">
+        <div class="text-xs" style="font-weight:700; margin-bottom:0.35rem;">필수 첨부서류 체크리스트 (행정실 사전 협의 권장)</div>
+        <div class="contract-doc-list">
+          ${docs.map((doc) => `<div class="contract-doc-item"><span style="color:var(--brand-primary);">✔</span><span>${escapeHtml(doc)}</span></div>`).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  // K-에듀파인 시뮬레이터 2종 전환 (① 품의 회수·연계반송 / ② 개산급 정산등록 9단계)
+  window.switchEdufineSim = function (which) {
+    activeEdufineSimTab = which;
+    const recallEl = document.getElementById("edufineRecallSim");
+    const settleEl = document.getElementById("edufineSettleSim");
+    const btnRecall = document.getElementById("simTabRecallBtn");
+    const btnSettle = document.getElementById("simTabSettleBtn");
+    if (recallEl) recallEl.style.display = which === "recall" ? "block" : "none";
+    if (settleEl) settleEl.style.display = which === "settle" ? "block" : "none";
+    if (btnRecall) btnRecall.className = `btn btn-sm ${which === "recall" ? "btn-primary" : "btn-secondary"}`;
+    if (btnSettle) btnSettle.className = `btn btn-sm ${which === "settle" ? "btn-primary" : "btn-secondary"}`;
+  };
+
+  window.resetActiveEdufineSim = function () {
+    if (activeEdufineSimTab === "settle") window.resetSettleSim();
+    else window.resetRecallSim();
+  };
+
+  // 시뮬레이터 ②: 개산급 정산등록 9단계 (p.60~62 '전산자료' 선택 체험)
+  window.resetSettleSim = function () {
+    settleSim = { stage: 0, selectedProof: "", message: "학급운영비 개산급을 정산할 차례입니다. 먼저 [1. 수령일 조회] 버튼을 눌러 미정산 건을 불러오세요.", msgType: "info" };
+    renderSettleSimulator();
+  };
+
+  window.settleSimAction = function (action, val) {
+    if (action === "search") {
+      if (settleSim.stage === 0) {
+        settleSim.stage = 1;
+        settleSim.message = "조회 완료! 아래 목록에서 진행상태가 '미정산'인 학급운영비 건을 클릭해 선택하세요.";
+        settleSim.msgType = "success";
+      } else {
+        settleSim.message = "이미 조회되었습니다. 다음 단계를 진행해 주세요.";
+        settleSim.msgType = "info";
+      }
+    } else if (action === "selectRow") {
+      if (settleSim.stage < 1) return;
+      if (settleSim.stage === 1) {
+        settleSim.stage = 2;
+        settleSim.message = "잘 선택했습니다! 이제 카드 영수증 내역을 [행추가]했습니다. 아래에서 카드 영수증의 올바른 '증빙구분'을 선택하세요.";
+        settleSim.msgType = "info";
+      }
+    } else if (action === "selectProof") {
+      settleSim.selectedProof = val;
+      if (val === "전산자료") {
+        settleSim.stage = 3;
+        settleSim.message = "정확합니다! 카드(법인·클린카드) 영수증의 증빙구분은 반드시 '전산자료'를 선택합니다. 이제 [3. 저장] 버튼을 누르세요.";
+        settleSim.msgType = "success";
+      } else if (val) {
+        settleSim.message = "⚠️ 실수 주의! 학교 법인·학급운영비 카드 영수증은 '간이/기타 영수증'이 아니라 반드시 '전산자료'를 선택해야 행정실 반려를 막을 수 있습니다!";
+        settleSim.msgType = "danger";
+      }
+    } else if (action === "save") {
+      if (settleSim.stage < 3) {
+        settleSim.message = "먼저 증빙구분을 '전산자료'로 올바르게 선택해 주세요!";
+        settleSim.msgType = "warn";
+      } else if (settleSim.stage === 3) {
+        settleSim.stage = 4;
+        settleSim.message = "저장 완료! 이제 [4. 정산서제출]을 클릭해 출납원(행정실)에게 전자 제출하세요.";
+        settleSim.msgType = "success";
+      }
+    } else if (action === "submit") {
+      if (settleSim.stage < 4) {
+        settleSim.message = "먼저 [3. 저장]을 완료한 뒤 정산서를 제출해야 합니다!";
+        settleSim.msgType = "warn";
+      } else if (settleSim.stage === 4) {
+        settleSim.stage = 5;
+        settleSim.message = "제출 완료! 마지막으로 [5. 출력]을 눌러 정산서 출력본과 실물 영수증을 5일 이내 행정실에 제출하면 끝!";
+        settleSim.msgType = "success";
+      }
+    } else if (action === "print") {
+      if (settleSim.stage < 5) {
+        settleSim.message = "먼저 [4. 정산서제출]을 완료해야 출력본을 제출할 수 있습니다!";
+        settleSim.msgType = "warn";
+      } else {
+        settleSim.stage = 6;
+        settleSim.message = "🎉 개산급 정산등록 9단계 완벽 마스터! (핵심 암기: 미정산 조회 → 카드 증빙은 '전산자료' → 저장 → 정산서제출 → 5일 이내 행정실 제출)";
+        settleSim.msgType = "success";
+      }
+    }
+    renderSettleSimulator();
+  };
+
+  function renderSettleSimulator() {
+    const wrap = document.getElementById("edufineSettleSim");
+    if (!wrap) return;
+    const statusText = settleSim.stage >= 5 ? "정산제출" : settleSim.stage >= 4 ? "작성저장" : "미정산";
+    const statusCls = settleSim.stage >= 5 ? "badge-green" : settleSim.stage >= 4 ? "badge-blue" : "badge-amber";
+
+    wrap.innerHTML = `
+      <div class="sim-window">
+        <div class="sim-titlebar">
+          <span>K-에듀파인 &gt; 학교회계 &gt; 사업관리 &gt; 품의/정산 &gt; 개산급정산등록</span>
+          <span class="badge ${statusCls}">단계 ${Math.min(settleSim.stage, 6)} / 6</span>
+        </div>
+        <div class="sim-toolbar">
+          <div class="row-wrap">
+            <button type="button" class="btn btn-sm ${settleSim.stage === 0 ? "btn-primary" : "btn-secondary"}" onclick="window.settleSimAction('search')">1. 수령일 조회</button>
+            <button type="button" class="btn btn-sm ${settleSim.stage === 3 ? "btn-primary" : "btn-secondary"}" onclick="window.settleSimAction('save')">3. 저장</button>
+            <button type="button" class="btn btn-sm ${settleSim.stage === 4 ? "btn-primary" : "btn-secondary"}" onclick="window.settleSimAction('submit')">4. 정산서제출</button>
+            <button type="button" class="btn btn-sm ${settleSim.stage === 5 ? "btn-success" : "btn-outline"}" onclick="window.settleSimAction('print')">5. 출력</button>
+          </div>
+        </div>
+        <div class="sim-body stack-sm">
+          ${
+            settleSim.stage === 0
+              ? `<div class="surface-box text-sm text-muted" style="text-align:center;">상단 [1. 수령일 조회]를 클릭하면 개산급 미정산 목록이 표시됩니다.</div>`
+              : `<div class="sim-row ${settleSim.stage >= 2 ? "selected" : ""}" onclick="window.settleSimAction('selectRow')">
+                  <span style="font-weight:800; color:var(--brand-primary);">${settleSim.stage >= 2 ? "✔" : "▶"}</span>
+                  <span class="badge badge-gray">학급운영비</span>
+                  <strong>3학년 1반 학급운영비 개산급 (수령액 640,000원)</strong>
+                  <span class="badge ${statusCls} sim-status-badge" style="justify-self:end;">${statusText}</span>
+                </div>`
+          }
+          ${
+            settleSim.stage >= 2
+              ? `<div class="surface-box">
+                  <div class="row-between mb-1">
+                    <strong class="text-sm">2. 정산 내역 [행추가] 입력 — 법인카드 영수증 (오늘 문구사 · 75,000원)</strong>
+                    <span class="badge badge-purple">★ 핵심 함정</span>
+                  </div>
+                  <div class="row-wrap">
+                    <label class="text-xs" style="font-weight:700;" for="simProofSelect">카드 영수증 증빙구분 선택:</label>
+                    <select id="simProofSelect" class="form-select" style="width:auto; padding:0.35rem 0.65rem; font-size:0.84rem;" onchange="window.settleSimAction('selectProof', this.value)" ${settleSim.stage >= 4 ? "disabled" : ""}>
+                      <option value="">-- 증빙구분 선택 --</option>
+                      <option value="간이영수증" ${settleSim.selectedProof === "간이영수증" ? "selected" : ""}>간이영수증</option>
+                      <option value="전산자료" ${settleSim.selectedProof === "전산자료" ? "selected" : ""}>전산자료</option>
+                      <option value="기타" ${settleSim.selectedProof === "기타" ? "selected" : ""}>기타 영수증</option>
+                    </select>
+                  </div>
+                </div>`
+              : ""
+          }
+          <div class="callout callout-${settleSim.msgType} text-sm">${escapeHtml(settleSim.message)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 시뮬레이터 ①: K-에듀파인 지출품의 회수 · 연계반송 클릭형 모의 체험 시뮬레이터
   window.resetRecallSim = function () {
     recallSim = { stage: 0, checked: false, message: "결재가 진행 중인 '교무실 사무용품 구입' 품의를 수정하려고 합니다. 먼저 해당 문서를 체크해 주세요.", msgType: "info" };
     renderRecallSimulator();
@@ -1866,7 +2539,7 @@
             <input type="checkbox" ${recallSim.checked ? "checked" : ""} onclick="event.stopPropagation(); window.simToggleCheck();" aria-label="품의 문서 선택" />
             <span class="badge badge-gray">지출품의</span>
             <strong>교무실 사무용품 구입 (내부/일반)</strong>
-            <span class="badge ${statusCls}" style="justify-self:end;">${statusText}</span>
+            <span class="badge ${statusCls} sim-status-badge" style="justify-self:end;">${statusText}</span>
           </div>
           <div class="callout callout-${recallSim.msgType} mt-1 text-sm">${escapeHtml(recallSim.message)}</div>
         </div>
@@ -2081,12 +2754,17 @@
     window.showToast(`${year}학년도 미완료 업무 ${events.length}건(추가 업무 포함)이 .ics로 저장되었습니다.`);
   };
 
-  // JneGPT 안전 프롬프트 + PII 가드
+  // JneGPT 안전 프롬프트 + PII 가드 v3 (주민번호·전화·이메일·계좌번호·차량번호·학반+학생실명)
   function detectPii(text) {
     const hits = [];
-    if (/\b\d{6}-?[1-4]\d{6}\b/.test(text)) hits.push("주민등록번호 패턴");
-    if (/01[016789]-?\d{3,4}-?\d{4}/.test(text)) hits.push("휴대폰 번호");
+    const phoneRe = /0(?:1[016789]|2|[3-6][1-5])-?\d{3,4}-?\d{4}/g;
+    if (/\b\d{6}-?[1-4]\d{6}\b/.test(text)) hits.push("주민등록번호");
+    if (phoneRe.test(text)) hits.push("전화·휴대폰 번호");
     if (/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(text)) hits.push("이메일 주소");
+    const withoutPhones = text.replace(phoneRe, "");
+    if (/\b\d{3,4}-\d{2,6}-\d{3,6}(?:-\d{1,3})?\b/.test(withoutPhones)) hits.push("은행 계좌번호");
+    if (/\b\d{2,3}[가-힣]\s?\d{4}\b/.test(text)) hits.push("차량번호");
+    if (/(?:\d\s*학년\s*\d{1,2}\s*반|\d-\d{1,2})\s+[가-힣]{2,4}(?=\s|,|\.|$|학생|어린이|군|양)/.test(text)) hits.push("학반·학생 실명");
     return hits;
   }
 
@@ -2094,10 +2772,25 @@
     const el = document.getElementById("aiKeywordsInput");
     el.value = el.value
       .replace(/\b\d{6}-?[1-4]\d{6}\b/g, "[주민번호 보호]")
-      .replace(/01[016789]-?\d{3,4}-?\d{4}/g, "[연락처 보호]")
-      .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[이메일 보호]");
+      .replace(/0(?:1[016789]|2|[3-6][1-5])-?\d{3,4}-?\d{4}/g, "[연락처 보호]")
+      .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[이메일 보호]")
+      .replace(/\b\d{3,4}-\d{2,6}-\d{3,6}(?:-\d{1,3})?\b/g, "[계좌번호 보호]")
+      .replace(/\b\d{2,3}[가-힣]\s?\d{4}\b/g, "[차량번호 보호]")
+      .replace(/(\d\s*학년\s*\d{1,2}\s*반|\d-\d{1,2})\s+[가-힣]{2,4}(?=\s|,|\.|$|학생|어린이|군|양)/g, "$1 [학생명 보호]");
     generateAiPrompt();
-    window.showToast("민감정보가 안전하게 마스킹되었습니다.");
+    window.showToast("민감정보(개인식별·계좌·학생 실명 등)가 안전하게 비식별 처리되었습니다.");
+  };
+
+  window.openLinterForAiCheck = function () {
+    window.switchMainTab("tab-doc", "doc-sub-linter");
+    setTimeout(() => {
+      const bodyEl = document.getElementById("lintBodyInput");
+      if (bodyEl) {
+        bodyEl.focus();
+        bodyEl.select();
+      }
+      window.showToast("AI가 생성한 초안을 붙여넣기(Ctrl+V)해 공문서 규범을 최종 점검하세요!");
+    }, 80);
   };
 
   function generateAiPrompt() {
@@ -2310,6 +3003,67 @@
   window.moveQuizFocus = function (delta) { quizFocusIndex += delta; renderQuiz(); };
   window.retrySingleQuiz = function (qId) { delete appState.quizAnswers[qId]; saveState(); renderQuiz(); };
 
+  window.toggleQuizPresenterMode = function () {
+    quizPresenterMode = !quizPresenterMode;
+    quizRevealedMap = {};
+    const btn = document.getElementById("quizPresenterToggleBtn");
+    if (btn) {
+      btn.textContent = `발표 모드: ${quizPresenterMode ? "ON" : "OFF"}`;
+      btn.className = `btn btn-sm ${quizPresenterMode ? "btn-primary" : "btn-secondary"}`;
+    }
+    renderQuiz();
+    window.showToast(quizPresenterMode ? "연수장 발표 모드가 켜졌습니다. [정답·해설 공개] 버튼으로 토론 후 공개하세요." : "일반 학습 모드로 전환되었습니다.");
+  };
+
+  window.togglePresenterReveal = function (qId) {
+    quizRevealedMap[qId] = !quizRevealedMap[qId];
+    renderQuiz();
+  };
+
+  function getFilteredQuizList() {
+    const questions = window.EDU_DATA.quizQuestions;
+    const filter = document.getElementById("quizCategoryFilter")?.value || "ALL";
+    let list = questions.filter((q) => filter === "ALL" || mapQuizDomain(q.category) === filter);
+    if (quizMode === "wrong") list = list.filter((q) => appState.quizAnswers[q.id] !== undefined && appState.quizAnswers[q.id] !== q.answer);
+    return list;
+  }
+
+  function handleQuizKeyboardShortcuts(e) {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (document.querySelector(".modal-backdrop.open")) return;
+    const quizTab = document.getElementById("tab-quiz");
+    const quizSub = document.getElementById("quiz-sub-play");
+    if (!quizTab?.classList.contains("active") || !quizSub?.classList.contains("active")) return;
+    if (quizMode !== "focus") return;
+
+    const list = getFilteredQuizList();
+    if (list.length === 0) return;
+    const q = list[Math.max(0, Math.min(quizFocusIndex, list.length - 1))];
+    if (!q) return;
+
+    if (e.key === "ArrowRight") {
+      if (quizFocusIndex < list.length - 1) {
+        e.preventDefault();
+        window.moveQuizFocus(1);
+      }
+    } else if (e.key === "ArrowLeft") {
+      if (quizFocusIndex > 0) {
+        e.preventDefault();
+        window.moveQuizFocus(-1);
+      }
+    } else if (["1", "2", "3", "4"].includes(e.key) && !quizPresenterMode) {
+      const optIdx = parseInt(e.key, 10) - 1;
+      if (appState.quizAnswers[q.id] === undefined && q.options[optIdx] !== undefined) {
+        e.preventDefault();
+        window.answerQuiz(q.id, optIdx);
+      }
+    } else if (e.key === " " && quizPresenterMode) {
+      e.preventDefault();
+      window.togglePresenterReveal(q.id);
+    }
+  }
+
   function renderQuiz() {
     const questions = window.EDU_DATA.quizQuestions;
     const filter = document.getElementById("quizCategoryFilter").value;
@@ -2331,7 +3085,7 @@
       }
     });
 
-    document.getElementById("quizScoreBadge").textContent = `점수: ${totalCorrect} / ${questions.length} (${totalCorrect * 5}점)`;
+    document.getElementById("quizScoreBadge").textContent = quizPresenterMode ? "발표 모드 진행 중" : `점수: ${totalCorrect} / ${questions.length} (${totalCorrect * 5}점)`;
     document.getElementById("quizWrongCount").textContent = String(totalWrong);
 
     document.getElementById("quizAnalyticsBar").innerHTML = Object.values(domainStats)
@@ -2350,7 +3104,31 @@
       return;
     }
 
+    const presenterBannerHtml = quizPresenterMode
+      ? `<div class="presenter-banner"><span><strong>연수장 발표 모드 작동 중</strong> — 선택지 클릭이 잠기며 정답이 가려집니다. 연수생과 토론 후 <strong>[정답·해설 공개]</strong>(또는 <code>Space</code>)를 눌러 확인하세요.</span><button type="button" class="btn btn-sm btn-secondary" onclick="window.toggleQuizPresenterMode()">발표 모드 종료</button></div>`
+      : "";
+
     const renderCard = (q, displayIndex, totalLen) => {
+      if (quizPresenterMode) {
+        const revealed = Boolean(quizRevealedMap[q.id]);
+        return `
+          <div class="surface-box">
+            <div class="row-between mb-1">
+              <span class="badge badge-purple">발표 문항 ${q.id} (${displayIndex + 1}/${totalLen}) · ${escapeHtml(q.category)}</span>
+              <button type="button" class="btn btn-sm ${revealed ? "btn-secondary" : "btn-primary"}" onclick="window.togglePresenterReveal(${q.id})">${revealed ? "정답 숨기기" : "정답 · 해설 공개"}</button>
+            </div>
+            <div style="font-weight:700; font-size:1.02rem; margin-bottom:0.85rem;">${escapeHtml(q.q)}</div>
+            <div>${q.options
+              .map((opt, oIdx) => {
+                const cls = revealed && oIdx === q.answer ? "quiz-option correct" : "quiz-option";
+                return `<button type="button" class="${cls}" disabled><span class="badge badge-gray">${oIdx + 1}</span><span>${escapeHtml(opt)}</span></button>`;
+              })
+              .join("")}</div>
+            ${revealed ? `<div class="callout callout-info mt-1 text-sm"><strong>정답 (${q.answer + 1}번) 해설:</strong> ${escapeHtml(q.explanation)}</div>` : ""}
+          </div>
+        `;
+      }
+
       const userAns = appState.quizAnswers[q.id];
       const answered = userAns !== undefined;
       return `
@@ -2375,9 +3153,9 @@
       if (quizFocusIndex >= list.length) quizFocusIndex = list.length - 1;
       const q = list[quizFocusIndex];
       const progressPct = Math.round(((quizFocusIndex + 1) / list.length) * 100);
-      container.innerHTML = `<div class="mb-1"><div class="row-between text-xs text-muted mb-1"><span>집중 학습 진행도</span><span>${quizFocusIndex + 1} / ${list.length} 문항</span></div><div class="progress-track"><div class="progress-fill" style="width:${progressPct}%;"></div></div></div>${renderCard(q, quizFocusIndex, list.length)}<div class="row-between mt-2"><button type="button" class="btn btn-secondary" ${quizFocusIndex === 0 ? "disabled" : ""} onclick="window.moveQuizFocus(-1)">← 이전 문제</button><button type="button" class="btn btn-primary" ${quizFocusIndex === list.length - 1 ? "disabled" : ""} onclick="window.moveQuizFocus(1)">다음 문제 →</button></div>`;
+      container.innerHTML = `${presenterBannerHtml}<div class="mb-1"><div class="row-between text-xs text-muted mb-1"><span>집중 학습 진행도 (키보드 1~4 선택 · ←/→ 이동)</span><span>${quizFocusIndex + 1} / ${list.length} 문항</span></div><div class="progress-track"><div class="progress-fill" style="width:${progressPct}%;"></div></div></div>${renderCard(q, quizFocusIndex, list.length)}<div class="row-between mt-2"><button type="button" class="btn btn-secondary" ${quizFocusIndex === 0 ? "disabled" : ""} onclick="window.moveQuizFocus(-1)">← 이전 문제</button><button type="button" class="btn btn-primary" ${quizFocusIndex === list.length - 1 ? "disabled" : ""} onclick="window.moveQuizFocus(1)">다음 문제 →</button></div>`;
     } else {
-      container.innerHTML = `<div class="stack-md">${list.map((q, i) => renderCard(q, i, list.length)).join("")}</div>`;
+      container.innerHTML = `${presenterBannerHtml}<div class="stack-md">${list.map((q, i) => renderCard(q, i, list.length)).join("")}</div>`;
     }
   }
 
@@ -2437,20 +3215,60 @@
   };
 
   // ==========================================
-  // 9. 글로벌 통합 검색
+  // 9. 글로벌 통합 검색 · 커맨드 팔레트 v3.0
   // ==========================================
+  const QUICK_COMMANDS = [
+    { id: "cmd-travel", keywords: "출장 여비 관내 관외 일비 식비 숙박 계산기", title: "공무원 국내 출장 여비 계산기 열기", desc: "관내·관외 출장 여비 및 공용차량 감액 자동 산출", run: () => window.switchMainTab("tab-budget", "budget-sub-tools") },
+    { id: "cmd-contract", keywords: "수의계약 계약 방법 s2b g2b 추정가격 입찰 판별기", title: "물품·용역·공사 계약 방법 판별기 열기", desc: "추정가격 환산 및 1인 수의·S2B·입찰 필수 서류 확인", run: () => window.switchMainTab("tab-budget", "budget-sub-tools") },
+    { id: "cmd-settle-sim", keywords: "개산급 정산 등록 시뮬레이터 전산자료 9단계", title: "개산급 정산등록 9단계 시뮬레이터 체험", desc: "카드 영수증 '전산자료' 선택 포함 9단계 모의 실습", run: () => { window.switchMainTab("tab-budget", "budget-sub-guide"); window.switchEdufineSim("settle"); } },
+    { id: "cmd-theme", keywords: "다크 모드 라이트 테마 야간 화면", title: "다크 / 라이트 모드 전환", desc: "화면 테마를 즉시 전환합니다", run: () => document.getElementById("themeToggleBtn").click() },
+    { id: "cmd-font", keywords: "큰 글씨 확대 빔프로젝터 발표 폰트", title: "큰 글씨 모드 전환 (가+ / 가-)", desc: "빔프로젝터·연수 발표용 글자 크기를 전환합니다", run: () => document.getElementById("fontScaleToggleBtn").click() },
+    { id: "cmd-print-settle", keywords: "정산서 인쇄 a4 학급운영비 출력", title: "학급운영비 공식 정산서 A4 인쇄", desc: "작성 중인 개산급 정산서를 공식 서식으로 인쇄합니다", run: () => window.printSettlementOfficial() },
+    { id: "cmd-backup", keywords: "백업 json 내보내기 저장 동기화", title: "내 데이터 백업 파일(.json) 다운로드", desc: "체크리스트·기안함·실습·퀴즈 기록 전체 백업", run: () => window.exportBackupJson() },
+    { id: "cmd-qr", keywords: "qr 큐알 공유 링크 스캔", title: "현재 화면 QR 코드 공유 열기", desc: "오프라인 QR 코드로 현재 페이지를 즉시 공유합니다", run: () => window.openQrModal() }
+  ];
+
   function openSearchModal() {
-    document.getElementById("searchModalBackdrop").classList.add("open");
     const input = document.getElementById("globalSearchModalInput");
     input.value = "";
     activeSearchIdx = -1;
     renderGlobalSearchResults("");
-    setTimeout(() => input.focus(), 40);
+    openModalAccessible("searchModalBackdrop", input);
   }
 
   window.closeSearchModal = function () {
-    document.getElementById("searchModalBackdrop").classList.remove("open");
+    closeModalAccessible("searchModalBackdrop");
   };
+
+  window.applySearchChip = function (keyword) {
+    const input = document.getElementById("globalSearchModalInput");
+    if (!input) return;
+    input.value = keyword;
+    input.focus();
+    renderGlobalSearchResults(keyword);
+  };
+
+  window.clearRecentSearches = function () {
+    appState.recentSearches = [];
+    saveState();
+    renderGlobalSearchResults("");
+  };
+
+  window.runQuickCommandById = function (cmdId) {
+    const cmd = QUICK_COMMANDS.find((c) => c.id === cmdId);
+    if (!cmd) return;
+    window.closeSearchModal();
+    cmd.run();
+  };
+
+  function recordRecentSearch(q) {
+    const clean = String(q || "").trim();
+    if (!clean || clean.length < 2) return;
+    const prev = (appState.recentSearches || []).filter((item) => item !== clean);
+    prev.unshift(clean);
+    appState.recentSearches = prev.slice(0, 6);
+    saveState();
+  }
 
   function handleSearchModalKeydown(e) {
     if (currentSearchResults.length === 0) return;
@@ -2469,7 +3287,15 @@
   window.jumpFromSearch = function (idx) {
     const item = currentSearchResults[idx];
     if (!item) return;
+    const currentInput = document.getElementById("globalSearchModalInput")?.value || "";
+    recordRecentSearch(currentInput);
     window.closeSearchModal();
+
+    if (item.cmdRun) {
+      item.cmdRun();
+      return;
+    }
+
     window.switchMainTab(item.tab, item.sub);
     setTimeout(() => {
       if (item.faqId) {
@@ -2491,6 +3317,15 @@
         document.getElementById("dictCategoryFilter").value = "ALL";
         document.getElementById("dictSearchInput").value = item.dictWord;
         renderPurifiedDict();
+      } else if (item.draftId) {
+        window.loadSavedDraft(item.draftId);
+      } else if (typeof item.quizIdx === "number") {
+        document.getElementById("quizCategoryFilter").value = "ALL";
+        quizMode = "focus";
+        quizFocusIndex = item.quizIdx;
+        window.setQuizMode("focus");
+        quizFocusIndex = item.quizIdx;
+        renderQuiz();
       }
     }, 80);
   };
@@ -2505,16 +3340,50 @@
   }
 
   function renderGlobalSearchResults(query) {
-    const q = query.trim().toLowerCase();
+    const rawQ = query.trim();
+    const q = rawQ.toLowerCase();
     const box = document.getElementById("globalSearchResults");
     activeSearchIdx = -1;
     if (!q) {
       currentSearchResults = [];
-      box.innerHTML = `<div class="text-sm text-muted" style="padding:0.5rem;">추천 검색어: <code>개산급</code> · <code>일반강사</code> · <code>교육운영비</code> · <code>익일</code> · <code>연계반송</code> · <code>폐시약</code> · <code>경조사비</code> · <code>봉사료</code></div>`;
+      const recKeywords = ["개산급", "출장 여비", "수의계약", "일반강사", "교육운영비", "익일", "연계반송", "경조사비", "봉사료"];
+      const recent = appState.recentSearches || [];
+      box.innerHTML = `
+        <div class="stack-md">
+          ${
+            recent.length > 0
+              ? `<div>
+                  <div class="row-between mb-1"><span class="text-xs text-muted" style="font-weight:700;">최근 검색어</span><button type="button" class="btn btn-sm btn-secondary" style="padding:0.15rem 0.5rem; font-size:0.72rem;" onclick="window.clearRecentSearches()">지우기</button></div>
+                  <div class="row-wrap">${recent.map((r) => `<button type="button" class="search-chip" onclick="window.applySearchChip('${escapeHtml(r).replace(/'/g, "\\'")}')">${escapeHtml(r)}</button>`).join("")}</div>
+                </div>`
+              : ""
+          }
+          <div>
+            <div class="text-xs text-muted mb-1" style="font-weight:700;">추천 검색어 (클릭하여 바로 검색)</div>
+            <div class="row-wrap">${recKeywords.map((k) => `<button type="button" class="search-chip" onclick="window.applySearchChip('${k}')">${k}</button>`).join("")}</div>
+          </div>
+          <div>
+            <div class="text-xs text-muted mb-1" style="font-weight:700;">빠른 실행 명령 (커맨드 팔레트)</div>
+            <div class="row-wrap">
+              ${QUICK_COMMANDS.map((c) => `<button type="button" class="search-chip search-chip-cmd" onclick="window.runQuickCommandById('${c.id}')">⚡ ${escapeHtml(c.title)}</button>`).join("")}
+            </div>
+          </div>
+        </div>
+      `;
       return;
     }
 
     const results = [];
+    QUICK_COMMANDS.forEach((c) => {
+      if (c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q) || c.keywords.toLowerCase().includes(q)) {
+        results.push({ badge: "⚡ 빠른 실행", title: c.title, desc: c.desc, cmdRun: c.run });
+      }
+    });
+    (appState.savedDrafts || []).forEach((d) => {
+      if (d.name.toLowerCase().includes(q) || (d.payload?.bTitle || "").toLowerCase().includes(q)) {
+        results.push({ badge: "내 기안함", title: d.name, desc: `${d.savedAt} 저장된 기안문 불러오기`, tab: "tab-doc", sub: "doc-sub-builder", draftId: d.id });
+      }
+    });
     window.EDU_DATA.purifiedTerms.forEach((t) => {
       if (t.wrong.toLowerCase().includes(q) || t.right.toLowerCase().includes(q) || t.reason.toLowerCase().includes(q)) {
         results.push({ badge: "공공언어·순화어", title: `${t.wrong} → ${t.right}`, desc: t.reason, tab: "tab-doc", sub: "doc-sub-dict", dictWord: t.wrong });
@@ -2523,6 +3392,11 @@
     window.EDU_DATA.costFinderCases.forEach((c) => {
       if (c.category.toLowerCase().includes(q) || c.item.toLowerCase().includes(q) || c.note.toLowerCase().includes(q)) {
         results.push({ badge: `원가통계비목 (${c.code})`, title: `${c.category} → ${c.item}`, desc: c.note, tab: "tab-budget", sub: "budget-sub-finder", costId: c.id });
+      }
+    });
+    window.EDU_DATA.costItemComparisons.forEach((v) => {
+      if (v.title.toLowerCase().includes(q) || v.leftDesc.toLowerCase().includes(q) || v.rightDesc.toLowerCase().includes(q)) {
+        results.push({ badge: "비목 8대 비교", title: v.title, desc: `${v.leftName} vs ${v.rightName}`, tab: "tab-budget", sub: "budget-sub-finder" });
       }
     });
     window.EDU_DATA.accountingFaqs.forEach((f) => {
@@ -2537,16 +3411,31 @@
         }
       }));
     });
+    (appState.customTasks || []).forEach((ct) => {
+      if (ct.title.toLowerCase().includes(q) || (ct.detail || "").toLowerCase().includes(q)) {
+        results.push({ badge: `내 추가 업무 (${ct.month}월)`, title: ct.title, desc: ct.detail || "사용자 추가 업무", tab: "tab-role", sub: "role-sub-dept", deptId: ct.deptId });
+      }
+    });
+    window.EDU_DATA.shortcuts.forEach((s) => {
+      if (s.key.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)) {
+        results.push({ badge: "에듀파인 단축키", title: s.key, desc: s.desc, tab: "tab-home" });
+      }
+    });
+    window.EDU_DATA.quizQuestions.forEach((qz, idx) => {
+      if (qz.q.toLowerCase().includes(q) || qz.explanation.toLowerCase().includes(q)) {
+        results.push({ badge: `능력평가 퀴즈 #${qz.id}`, title: qz.q, desc: qz.explanation.slice(0, 95) + "...", tab: "tab-quiz", sub: "quiz-sub-play", quizIdx: idx });
+      }
+    });
 
-    currentSearchResults = results.slice(0, 20);
+    currentSearchResults = results.slice(0, 24);
     if (currentSearchResults.length === 0) {
-      box.innerHTML = `<div class="text-muted" style="padding:1.5rem; text-align:center;">'${escapeHtml(query)}'에 대한 검색 결과가 없습니다.</div>`;
+      box.innerHTML = `<div class="text-muted" style="padding:1.5rem; text-align:center;">'${escapeHtml(rawQ)}'에 대한 검색 결과가 없습니다.</div>`;
       return;
     }
 
     activeSearchIdx = 0;
     box.innerHTML = currentSearchResults
-      .map((r, i) => `<div class="search-result-item ${i === 0 ? "active" : ""}" onclick="window.jumpFromSearch(${i})"><div class="row-between" style="margin-bottom:0.2rem;"><span class="badge badge-blue">${escapeHtml(r.badge)}</span><span class="text-xs" style="color:var(--brand-primary); font-weight:700;">바로 이동 →</span></div><div style="font-weight:700; font-size:0.91rem;">${escapeHtml(r.title)}</div><div class="text-xs text-secondary" style="margin-top:0.15rem;">${escapeHtml(r.desc)}</div></div>`)
+      .map((r, i) => `<div class="search-result-item ${i === 0 ? "active" : ""}" onclick="window.jumpFromSearch(${i})"><div class="row-between" style="margin-bottom:0.2rem;"><span class="badge ${r.cmdRun ? "badge-purple" : "badge-blue"}">${escapeHtml(r.badge)}</span><span class="text-xs" style="color:var(--brand-primary); font-weight:700;">${r.cmdRun ? "즉시 실행 →" : "바로 이동 →"}</span></div><div style="font-weight:700; font-size:0.91rem;">${highlightText(r.title, rawQ)}</div><div class="text-xs text-secondary" style="margin-top:0.15rem;">${highlightText(r.desc, rawQ)}</div></div>`)
       .join("");
   }
 
