@@ -1822,4 +1822,4 @@ code {
   .header-actions { justify-content: flex-start; }
 }
 /* 휴대폰에서 표가 든 카드가 화면 밖으로 밀려나지 않게 (표는 카드 안에서 가로 스크롤) */
-.grid-2 > *, .grid-3 > *, .grid-4 > * { min-width: 0; }
+.grid-2 > *, .grid-3 > *, .grid-4 > *, .stack-sm > *, .stack-md > *, .stack-lg > * { min-width: 0; }
